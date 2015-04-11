@@ -31,10 +31,12 @@ def load_project(name):
     """
     Load a project from the set project paths
     """
+    _name = name
     name += ".qgs"
     for path in project_paths:
         for root, dirs, files in os.walk(path):
             if name in files:
-                print files
                 path = os.path.join(root, name)
                 iface.addProject(path)
+                return
+    iface.addProject(_name)

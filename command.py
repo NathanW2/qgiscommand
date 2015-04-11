@@ -28,6 +28,7 @@ def alias(alias, name, *args):
     func = commands[escape_name(name)]
     commands[alias] = (func, args)
 
+
 def parse_line_data(line):
     data = line.split()
     if not data or not line.strip():
@@ -63,7 +64,7 @@ def parse_line_data(line):
         prompts = list(reversed(func_args[funcname]))
         prompts = prompts[wehavecount:]
         for prompt in prompts:
-            argdata = yield "({}) {} ".format(funcname, prompt)
+            argdata = yield "({}) {}:".format(funcname, prompt)
             argdatas.append(argdata)
 
     func(*argdatas)
