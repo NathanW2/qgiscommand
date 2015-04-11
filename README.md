@@ -18,6 +18,10 @@ The new function can be called in the command bar like so:
 
 The command bar will split based on space and the first argument is always the function name, the rest are arguments passed to the function.
 
+The command bar also has auto complete for defined functions, and tooltips once I get that to work correctly
+
+You can use `CTRL + ;` to open and close the command bar.
+
 ## TIPS
 
 You can also alias a function by calling the `alias` function in the command bar.
