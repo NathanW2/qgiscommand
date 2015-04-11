@@ -37,6 +37,7 @@ class CommandBar:
     def unload(self):
         self.iface.removeToolBarIcon(self.action)
         del self.action
+        del self.shell
 
     def run(self):
         self.shell.activated()
