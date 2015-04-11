@@ -47,10 +47,30 @@ def DMS (lat, lon):
     Add a point at the lat and lon for the current layer using DMS notation
     """
 
-    lat,lon = float(lat), float(lon)
+    lat,lon = lat, lon
+
+    l_lat = lat.upper().split()
+    l_lon = lon.upper().split()
+
+    # need to add validation tests
+
+    if l_lat[3] == 'N':
+        ddlat = float(l_lat[0])+float(l_lat[0])/60+float(l_lat[0])/3600
+    elif l_lat[3] == 'S':
+        ddlat = (float(l_lat[0])+float(l_lat[0])/60+float(l_lat[0])/3600)*-1
+    else:
+        ddlat = '0'
+
+    if l_lon [3] == 'E':
+        ddlon = float(l_lon[0])+float(l_lon[0])/60+float(l_lon[0])/3600
+    elif l_lon[3] == 'W':
+        ddlon = (float(l_lon[0])+float(l_lon[0])/60+float(l_lon[0])/3600)*-1
+    else:
+        ddlon = '0'
+
     layer = iface.activeLayer()
     f = QgsFeature(layer.pendingFields())
-    geom = QgsGeometry.fromPoint(QgsPoint(lon,lat))
+    geom = QgsGeometry.fromPoint(QgsPoint(ddlon,ddlat))
     f.setGeometry(geom)
     layer.addFeature(f)
     iface.mapCanvas().refresh()
