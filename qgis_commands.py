@@ -76,7 +76,6 @@ def dms (lat, lon):
     f.setGeometry(geom)
     layer.addFeature(f)
     iface.mapCanvas().refresh()
-=======
     
 @command.command()
 def hide_docks():
