@@ -25,6 +25,9 @@ class CommandBar:
         self.short = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Semicolon), iface.mainWindow())
         self.short.setContext(Qt.ApplicationShortcut)
         self.short.activated.connect(self.shell.activated)
+        self.shortDE = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Comma), iface.mainWindow())
+        self.shortDE.setContext(Qt.ApplicationShortcut)
+        self.shortDE.activated.connect(self.shell.activated)
 
     def initGui(self):
         self.action = QAction("Open Command Bar!", self.iface.mainWindow())
