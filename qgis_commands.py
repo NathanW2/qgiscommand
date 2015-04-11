@@ -49,7 +49,7 @@ def DMS (lat, lon):
     #lat =
     #lon
 
-    lat,lon = float(x), float(y)
+    lat,lon = float(y), float(x)
     layer = iface.activeLayer()
     f = QgsFeature(layer.pendingFields())
     geom = QgsGeometry.fromPoint(QgsPoint(x,y))
