@@ -1,25 +1,62 @@
-# QGIS Minimalist Plugin Skeleton
+# QGIS Command Bar
 
-In various QGIS plugin tutorials you are told to use _Plugin Builder_ tool to create a skeleton for your plugin.
-It is surely helpful as it helps you kickstart your plugin with stuff like UI designer file, auto tests, docs, i18n, scripts and so on.
+Adds a simple interactive command bar to QGIS.  Commands are defined as Python code and may take arguments.
 
-This QGIS plugin is the complete opposite of a plugin built with _Plugin Builder_: it is a plugin skeleton cut down
-to the bare minimum that still results in a valid QGIS plugin. It consists of two files only: a text file with metadata and a Python file with a bit of code.
+All functions are interactive and if not all arguments are given will prompt for each one as required.
 
-## Why?
+When defining a interactive functions questions can be added using the `command.command` decorator
 
-For educational purposes, it is useful to understand how a very basic plugin could look like.
+```
+@command.command("Question 1", "Question 2")
+def my_function(arg1, arg2):
+    pass
+```
 
-For practical reasons, it is sometimes useful to create a single purpose plugin with the least amount of extra bells and whistles,
-so the code that actually does something is not hidden among generated boilerplate code.
+The new function can be called in the command bar like so:
 
-## How to use it?
+`my-function Hello World`
 
-1. Create a new python plugin directory, e.g. ```~/.qgis2/python/plugins/minimal```
-2. Copy ```metadata.txt``` and ```__init__.py``` to that directory
-3. Start QGIS and enable the plugin (menu Plugins > Manager and Install Plugins...)
+The command bar will split based on space and the first argument is always the function name, the rest are arguments passed to the function.
 
-Now you should see a "Go!" button in your "Plugins" toolbar (make sure it is enabled in menu Settings > Toolbars > Plugins).
+## TIPS
 
-The next step is to change the metadata (e.g. plugin title and description) in ```metadata.txt``` and
-start adding your own code to ```__init__.py```. Have fun!
+You can also alias a function by calling the `alias` function in the command bar.
+
+`alias mypoint point-at 100`
+ 
+ `point-at` is a built in function that creates a point at `x y` however we can alias it so that it will be pre-called with the x argument set. Now when we call `mypoint` we only have to pass the `y` each time.
+
+```
+-> mypoint
+(point-at) What is the Y?: 200
+```
+
+Pro Tip:
+
+You can even alias the alias command
+
+```
+-> alias & alias
+& mypoint 100
+```
+
+`&` is now the shortcut hand for `alias`
+
+## User functions
+
+In a future version I will load user functions from a `.qgis2/python/qgiscommand` folder. Open to pull requests for that feature.
+
+## NOTE
+
+This is a work in progress and mainly a quick brain dump to play around with the idea.  
+
+# TODO
+
+- Save alias comamnds to disk
+- User function location
+- Tests
+- More tests
+- Docs
+- More functions
+
+Open to pull requests
