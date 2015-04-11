@@ -56,7 +56,7 @@ class CommandShell(QsciScintilla):
         self.setAutoCompletionThreshold(1)
         self.setCallTipsStyle(QsciScintilla.CallTipsNoContext)
         self.parent().installEventFilter(self)
-        
+
     def eventFilter(self, object, event):
         if event.type() == QEvent.Resize:
             self.adjust_size()
