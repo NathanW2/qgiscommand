@@ -40,3 +40,19 @@ def load_project(name):
                 iface.addProject(path)
                 return
     iface.addProject(_name)
+
+@command.command("What is the x?", "What is the y?")
+def DMS (lat, lon):
+    """
+    Add a point at the lat and lon for the current layer using DMS notation
+    """
+    #lat =
+    #lon
+
+    lat,lon = float(x), float(y)
+    layer = iface.activeLayer()
+    f = QgsFeature(layer.pendingFields())
+    geom = QgsGeometry.fromPoint(QgsPoint(x,y))
+    f.setGeometry(geom)
+    layer.addFeature(f)
+    iface.mapCanvas().refresh()
