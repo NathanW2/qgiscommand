@@ -4,6 +4,8 @@ from qgis.core import *
 from qgis.gui import *
 from qgis.utils import iface
 
+from PyQt4.QtGui import QDockWidget
+
 import command
 
 project_paths = []
@@ -40,3 +42,9 @@ def load_project(name):
                 iface.addProject(path)
                 return
     iface.addProject(_name)
+    
+@command.command()
+def hide_docks():
+    docks = iface.mainWindow().findChildren(QDockWidget)
+    for dock in docks:
+        dock.setVisible(False)
