@@ -50,7 +50,7 @@ def DMS (lat, lon):
     lat,lon = float(lat), float(lon)
     layer = iface.activeLayer()
     f = QgsFeature(layer.pendingFields())
-    geom = QgsGeometry.fromPoint(QgsPoint(lat,lon))
+    geom = QgsGeometry.fromPoint(QgsPoint(lon,lat))
     f.setGeometry(geom)
     layer.addFeature(f)
     iface.mapCanvas().refresh()
