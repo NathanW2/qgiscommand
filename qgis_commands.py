@@ -8,6 +8,9 @@ from PyQt4.QtGui import QDockWidget
 
 import command
 
+def layer_by_name(layername):
+    return QgsMapLayerRegistry.instance().mapLayersByName(layername)[0]
+
 project_paths = []
 
 @command.command("What is the x?", "What is the y?")
@@ -82,3 +85,11 @@ def hide_docks():
     docks = iface.mainWindow().findChildren(QDockWidget)
     for dock in docks:
         dock.setVisible(False)
+
+@command.command("layer name")
+def table(tablename):
+    if not tablename.strip():
+        layer = iface.activeLayer()
+    else:
+        layer = layer_by_name(tablename)
+    iface.showAttributeTable(layer)
