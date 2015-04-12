@@ -54,8 +54,15 @@ def line_valid(line, checks, args, argdata):
             return checkfunc(data)
         except IndexError:
             continue
-        
+    return True, ""
 
+def data_valid(data, argname, checks):
+    try:
+        func = checks[argname]
+        return func(data)
+    except KeyError:
+        return True, ""
+        
 def parse_line(line):
     print "PARSE,", line
     data = line.split()
@@ -107,26 +114,17 @@ def parse_line_data(line):
     if neededcount > wehavecount:
         prompts = list(reversed(func_args[funcname]))
         prompts = prompts[wehavecount:]
-        for prompt in prompts:
-            validator = None
-            # if isinstance(prompt, tuple):
-            #     validator = prompt[1]
-            #     prompt = prompt[0]
+        for argindex, prompt in enumerate(prompts):
             _line = "({}) {}".format(funcname, prompt)
-            argdata = yield _line, None
-
-            # TODO Refactor to avoid heavy nesting
-            # if validator:
-            #     # Only allow input that passes the validation
-            #     valid, reason = validator(argdata)
-            #     while not valid:
-            #         _line = "({}) {} ({}): ".format(funcname, prompt, reason)
-            #         _linelength = len(_line)
-            #         _line +=
-            #         argdata = yield _line
-            #         valid, reason = validator(argdata)
+            data = yield _line, None
+            argname = needed[argindex]
+            valid, reason = data_valid(data, argname, _validators)
+            while not valid:
+                _line = "({}) {} ({})".format(funcname, prompt, reason)
+                data = yield _line, data
+                valid, reason = data_valid(data, argname, _validators)
                     
-            argdata.append(argdata)
+            argdata.append(data)
 
     print func
     func(*argdata)
@@ -157,11 +155,11 @@ def runloop():
             continue
 
         try:
-            prompt, length = gen.send(None)
+            prompt, data = gen.send(None)
             while True:
                 inputdata = raw_input(prompt + " ")
                 print inputdata
-                prompt = gen.send(inputdata)
+                prompt, data = gen.send(inputdata)
         except StopIteration:
             continue
 
