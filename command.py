@@ -129,17 +129,6 @@ def parse_line_data(line):
     print func
     func(*argdata)
 
-def less_then_10(value):
-    if int(value) < 10:
-        return True, ""
-    else:
-        return False, "Value must be lower then 10"
-
-@command("What number do you want")
-@check(number=less_then_10)
-def valid_check(number):
-    print number
-
         
 ## Command line version.
 def runloop():
