@@ -1,6 +1,5 @@
 import sys
 import os
-sys.path.append('/home/nathan/dev/data-dev/qgiscommand')
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -70,7 +69,6 @@ class CommandShell(QsciScintilla):
             
         try:
             completions = command.completions_for_line(self.get_data())
-            print completions
             if completions == self._lastcompletions:
                 self.autoCompleteFromAPIs()
                 return
@@ -78,17 +76,13 @@ class CommandShell(QsciScintilla):
             self._lastcompletions = completions
                 
             self.apis.cancelPreparation()
-            print "Cancel"
             self.apis.clear()
-            print "Cleared"
             for value in completions:
                 data = "{}".format(value)
                 self.apis.add(data)
 
-            print "Added"
 
             self.apis.prepare()
-            print "Done"
         except command.NoFunction:
             return
 
@@ -146,7 +140,6 @@ class CommandShell(QsciScintilla):
 
     def entered(self):
         line = self.get_data()
-        print "Sending ->", line
         if not self.currentfunction:
             gen = command.parse_line_data(line)
             if gen:

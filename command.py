@@ -60,9 +60,13 @@ def alias(alias, name, *args):
 
 def completions_for_line(line):
     endofline = line.endswith(" ")
-    funcname, func, data = parse_line(line)
+    try:
+        funcname, func, data = parse_line(line)
+    except NoFunction:
+        return commands.keys()
     args, _, _, _ = inspect.getargspec(func)
     index = len(data) - 1
+
     if endofline:
         index += 1
     
@@ -108,7 +112,6 @@ def parse_line(line):
     """
     Parse the line and return the name of the called function, the Python function, and the data
     """
-    print "PARSE,", line
     data = line.split()
     line = line.strip()
     if not data or not line:
