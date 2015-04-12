@@ -1,5 +1,30 @@
 # API
 
+Functions that can be used as commands should defined with the `@command.command` function.  This function takes a list of questions for each argument. At the moment you must set all questions for all
+args in the function.
+
+Here is an example function that will open the attribute table for the given layer name
+
+```python
+@command.command("Layer name (Empty for active layer)?")
+def table(tablename):
+    if not tablename.strip():
+        layer = iface.activeLayer()
+    else:
+        layer = layer_by_name(tablename)
+    iface.showAttributeTable(layer)
+```
+
+Functions with `_` in the name will be auto converted to `-` for use in the command bar.  Functions are also forced to be lowercase.
+
+```python
+@command.command()
+def my_function():
+    pass
+```
+
+Can be called as `my-function`
+
 ### Auto Complete
 
 Auto complete functions should return a list of values to be used by the auto complete list in the bar
