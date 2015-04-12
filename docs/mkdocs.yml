@@ -1,0 +1,4 @@
+site_name: QGIS Command Bar
+pages:
+- [index.md, Home]
+theme: readthedocs
