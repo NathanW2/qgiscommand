@@ -4,7 +4,7 @@ sys.path.append('/home/nathan/dev/data-dev/qgiscommand')
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from PyQt4.Qsci import QsciScintilla, QsciLexerCustom, QsciLexerBash, QsciAPIs
+from PyQt4.Qsci import QsciScintilla, QsciLexerCustom, QsciAPIs, QsciLexerPython
 
 import command
 import qgis_commands
@@ -46,16 +46,51 @@ class CommandShell(QsciScintilla):
         self.setMinimumHeight(50)
         self.setMaximumHeight(50)
         self.settings = QSettings()
+        self.lex = QsciLexerPython(self)
+        self.apis = QsciAPIs(self.lex)
+        self.lex.setAPIs(self.apis)
         self.setLexers()
         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
         self.SendScintilla(QsciScintilla.SCI_SETVSCROLLBAR, 0)
         self.setFolding(0)
         self._start_prompt = _start_prompt
+        self.prompt = self._start_prompt
         self.currentfunction = None
         self.setAutoCompletionSource(self.AcsAPIs)
         self.setAutoCompletionThreshold(1)
+        self.setAutoCompletionReplaceWord(True)
         self.setCallTipsStyle(QsciScintilla.CallTipsNoContext)
         self.parent().installEventFilter(self)
+        self.textChanged.connect(self.text_changed)
+        self._lastcompletions = None
+
+    def text_changed(self):
+        if not self.get_data().strip():
+            return
+            
+        try:
+            completions = command.completions_for_line(self.get_data())
+            print completions
+            if completions == self._lastcompletions:
+                self.autoCompleteFromAPIs()
+                return
+
+            self._lastcompletions = completions
+                
+            self.apis.cancelPreparation()
+            print "Cancel"
+            self.apis.clear()
+            print "Cleared"
+            for value in completions:
+                data = "{}".format(value)
+                self.apis.add(data)
+
+            print "Added"
+
+            self.apis.prepare()
+            print "Done"
+        except command.NoFunction:
+            return
 
     def end(self):
         self.parent().removeEventFilter(self)
@@ -104,9 +139,13 @@ class CommandShell(QsciScintilla):
         self.ensureCursorVisible()
         self.ensureLineVisible(line)
 
-    def entered(self):
+    def get_data(self):
         line = self.text()
         line = line[len(self.prompt):]
+        return line
+
+    def entered(self):
+        line = self.get_data()
         print "Sending ->", line
         if not self.currentfunction:
             gen = command.parse_line_data(line)
@@ -137,17 +176,9 @@ class CommandShell(QsciScintilla):
         font.setLetterSpacing(QFont.PercentageSpacing, 87.0)
         font.setBold(False)
 
-        self.lex = QsciLexerBash(self)
         self.lex.setFont(font)
         self.lex.setDefaultFont(font)
 
-        apis = QsciAPIs(self.lex)
-        for name in command.commands:
-            data = "{}(){}".format(name, command.help_text[name])
-            apis.add(data)
-
-        apis.prepare()
-        self.lex.setAPIs(apis)
 
         self.setLexer(self.lex)
 

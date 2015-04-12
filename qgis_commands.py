@@ -1,4 +1,5 @@
 import os
+import glob
 
 from qgis.core import *
 from qgis.gui import *
@@ -31,7 +32,16 @@ def define_project_paths(paths):
     global project_paths
     project_paths = paths.split(',')
 
+
+def complete_projects(argname, data):
+    # TODO Add auto complete for paths
+    projects = []
+    for path in project_paths:
+        projects += [os.path.basename(f) for f in glob.glob(path + "/*.qgs")]
+    return projects
+
 @command.command("Name")
+@command.complete_with(name=complete_projects)
 def load_project(name):
     """
     Load a project from the set project paths
@@ -86,7 +96,23 @@ def hide_docks():
     for dock in docks:
         dock.setVisible(False)
 
+def vector_layers(argname, data):
+    return [layer.name() for layer in QgsMapLayerRegistry.instance().mapLayers().values()]
+
+def is_vector_layer(data):
+    try:
+        layer = layer_by_name(data)
+        vector = layer.type() == QgsMapLayer.VectorLayer
+        if vector:
+            return True, ""
+        else:
+            return False, "Is not vector layer"
+    except IndexError:
+        return False, "Layer not found"
+            
 @command.command("layer name")
+@command.complete_with(tablename=vector_layers)
+@command.check(tablename=is_vector_layer)
 def table(tablename):
     if not tablename.strip():
         layer = iface.activeLayer()

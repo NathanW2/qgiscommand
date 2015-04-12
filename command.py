@@ -6,6 +6,12 @@ help_text = {}
 
 # Validators is a dict of function names and with a dict of argname and check function
 validators = {}
+completers = {}
+
+
+class NoFunction(Exception):
+    pass
+
 
 def escape_name(funcname):
     funcname = funcname.replace("_","-")
@@ -31,6 +37,16 @@ def check(**checks):
         return func
     return wrapper
 
+def complete_with(**functions):
+    def wrapper(func):
+        name = escape_name(func.__name__)
+        block = completers.setdefault(name, {})
+        block.update(functions)
+        completers[name] = block
+        return func
+    return wrapper
+
+
 @command("Alias", "Function Name", "Args")
 def alias(alias, name, *args):
     """
@@ -41,6 +57,31 @@ def alias(alias, name, *args):
     func = commands[escape_name(name)]
     commands[alias] = (func, args)
 
+
+def completions_for_line(line):
+    endofline = line.endswith(" ")
+    funcname, func, data = parse_line(line)
+    args, _, _, _ = inspect.getargspec(func)
+    index = len(data) - 1
+    if endofline:
+        index += 1
+    
+    try:
+        argname = args[index]
+    except IndexError:
+        return []
+
+    try:
+        userdata = data[index]
+    except IndexError:
+        userdata = ''
+            
+    try:
+        completefunc = completers.get(funcname, {})[argname]
+        return completefunc(argname, userdata)
+    except KeyError:
+        return []
+        
 
 def validators_for_function(funcname):
     return validators.get(funcname, {})
@@ -64,6 +105,9 @@ def data_valid(data, argname, checks):
         return True, ""
         
 def parse_line(line):
+    """
+    Parse the line and return the name of the called function, the Python function, and the data
+    """
     print "PARSE,", line
     data = line.split()
     line = line.strip()
@@ -82,8 +126,7 @@ def parse_line(line):
         else:
             func = funcdef
     except KeyError:
-        print "No function called {}".format(funcname)
-        return
+        raise NoFunction("No function called {}".format(funcname))
 
     # Add the args that have been already set for this function
     args = data[1:]
@@ -126,7 +169,6 @@ def parse_line_data(line):
                     
             argdata.append(data)
 
-    print func
     func(*argdata)
 
         
@@ -147,13 +189,12 @@ def runloop():
             prompt, data = gen.send(None)
             while True:
                 inputdata = raw_input(prompt + " ")
-                print inputdata
                 prompt, data = gen.send(inputdata)
         except StopIteration:
             continue
 
 
-if __name__ == "__main__":
-    runloop()
+# if __name__ == "__main__":
+#     runloop()
 
 # Qt Widget
