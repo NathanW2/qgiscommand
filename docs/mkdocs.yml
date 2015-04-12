@@ -1,4 +1,5 @@
 site_name: QGIS Command Bar
 pages:
 - [index.md, Home]
+- [api.md, API]
 theme: readthedocs
