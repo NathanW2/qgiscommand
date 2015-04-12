@@ -78,9 +78,17 @@ class CommandShell(QsciScintilla):
         else:
             QsciScintilla.keyPressEvent(self, e)
 
-    def show_prompt(self, prompt=_start_prompt):
+    def show_prompt(self, prompt=_start_prompt, data=None):
         self.clear()
-        self.setText(prompt)
+        if not prompt == _start_prompt:
+            prompt += ":"
+
+        text = prompt
+
+        if data:
+            text = prompt + str(data)
+
+        self.setText(text)
         self.prompt = prompt
         self.move_cursor_to_end()
 
@@ -111,8 +119,8 @@ class CommandShell(QsciScintilla):
                 return
 
         try:
-            prompt = self.currentfunction.send(line)
-            self.show_prompt(prompt)
+            prompt, data = self.currentfunction.send(line)
+            self.show_prompt(prompt, data)
         except StopIteration:
             self.currentfunction = None
             self.show_prompt()
