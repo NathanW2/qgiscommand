@@ -14,9 +14,10 @@ class NoFunction(Exception):
 
 
 def escape_name(funcname):
-    funcname = funcname.replace("_","-")
-    funcname = funcname.replace(" ","-")
-    return funcname.lower()
+    funcname = funcname.replace("_", "-")
+    funcname = funcname.replace(" ", "-")
+    return funcname
+
 
 def command(*prompts):
     def wrapper(func):
@@ -37,6 +38,7 @@ def check(**checks):
         return func
     return wrapper
 
+
 def complete_with(**functions):
     def wrapper(func):
         name = escape_name(func.__name__)
@@ -54,6 +56,7 @@ def is_comamnd(commandname):
         return True,''
     else:
         return False, "No command found called {}".format(commandname)
+
 
 def not_empty(value):
     if not value.strip():

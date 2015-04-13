@@ -14,18 +14,20 @@ def layer_by_name(layername):
 
 project_paths = []
 
+
 @command.command("What is the x?", "What is the y?")
 def point_at(x, y):
     """
     Add a point at the x and y for the current layer
     """
-    x,y = float(x), float(y)
+    x, y = float(x), float(y)
     layer = iface.activeLayer()
     f = QgsFeature(layer.pendingFields())
-    geom = QgsGeometry.fromPoint(QgsPoint(x,y))
+    geom = QgsGeometry.fromPoint(QgsPoint(x, y))
     f.setGeometry(geom)
     layer.addFeature(f)
     iface.mapCanvas().refresh()
+
 
 @command.command("Paths?")
 def define_project_paths(paths):
@@ -39,6 +41,7 @@ def complete_projects(argname, data):
     for path in project_paths:
         projects += [os.path.basename(f) for f in glob.glob(path + "/*.qgs")]
     return projects
+
 
 @command.command("Name")
 @command.complete_with(name=complete_projects)
@@ -55,6 +58,7 @@ def load_project(name):
                 iface.addProject(path)
                 return
     iface.addProject(_name)
+
 
 @command.command("Latitude in DMS?", "Longitude in DMS?")
 def dms (lat, lon):
@@ -89,7 +93,7 @@ def dms (lat, lon):
     f.setGeometry(geom)
     layer.addFeature(f)
     iface.mapCanvas().refresh()
-    
+
 @command.command()
 def hide_docks():
     docks = iface.mainWindow().findChildren(QDockWidget)
@@ -109,7 +113,7 @@ def is_vector_layer(data):
             return False, "Is not vector layer"
     except IndexError:
         return False, "Layer not found"
-            
+
 @command.command("layer name")
 @command.complete_with(tablename=vector_layers)
 @command.check(tablename=is_vector_layer)

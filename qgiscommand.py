@@ -13,6 +13,7 @@ reload(qgis_commands)
 
 _start_prompt = "-> "
 
+
 class Lexer(QsciLexerCustom):
     """
     Note: Crashes at the momemnt
@@ -23,7 +24,7 @@ class Lexer(QsciLexerCustom):
             0: 'Default',
             1: 'Function',
             }
-        for key,value in self._styles.iteritems():
+        for key, value in self._styles.iteritems():
             setattr(self, value, key)
 
     def description(self, style):
@@ -39,9 +40,10 @@ class Lexer(QsciLexerCustom):
     def styleText(self, start, end):
         print start, end
 
+
 class CommandShell(QsciScintilla):
     def __init__(self, parent=None):
-        super(CommandShell,self).__init__(parent)
+        super(CommandShell, self).__init__(parent)
         self.setMinimumHeight(50)
         self.setMaximumHeight(50)
         self.settings = QSettings()
@@ -171,15 +173,13 @@ class CommandShell(QsciScintilla):
 
         self.lex.setFont(font)
         self.lex.setDefaultFont(font)
-
-
         self.setLexer(self.lex)
 
     def adjust_size(self):
         fm = QFontMetrics(self.font())
         self.setMaximumHeight(20)
         self.resize(self.parent().width(), 20)
-        self.move(0,self.parent().height() - self.height())
+        self.move(0, self.parent().height() - self.height())
 
     def showEvent(self, event):
         self.adjust_size()
