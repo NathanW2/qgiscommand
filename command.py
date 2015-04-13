@@ -7,6 +7,7 @@ help_text = {}
 # Validators is a dict of function names and with a dict of argname and check function
 validators = {}
 completers = {}
+sourcelookup = {}
 
 
 class NoFunction(Exception):
@@ -20,11 +21,13 @@ def escape_name(funcname):
 
 
 def command(*prompts):
+    (_, filename, line_number, _, _, _) = inspect.getouterframes(inspect.currentframe())[1]
     def wrapper(func):
         name = escape_name(func.__name__)
         func_args[name] = list(reversed(prompts))
         commands[name] = func
         help_text[name] = func.__doc__
+        sourcelookup[name] = (filename, line_number)
         return func
     return wrapper
 

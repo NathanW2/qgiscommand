@@ -13,6 +13,38 @@ reload(qgis_commands)
 
 _start_prompt = "-> "
 
+class SourceViewer(QsciScintilla):
+    def __init__(self, parent=None):
+        super(SourceViewer, self).__init__(parent)
+        self.lex = QsciLexerPython(self)
+        self.setLexer(self.lex)
+        self.setReadOnly(True)
+
+    def setText(self, text, line=0):
+        super(SourceViewer, self).setText(text)
+        self.setFirstVisibleLine(line)
+
+
+@command.command("Command name")
+@command.check(name=command.is_comamnd)
+def view_source(name):
+    """
+    Lookup the source code for a given command
+    """
+    func = command.commands[name]
+    filename, lineno = command.sourcelookup[name]
+    dlg = QDialog()
+    dlg.setWindowTitle(filename)
+    dlg.setLayout(QGridLayout())
+    dlg.layout().setContentsMargins(0, 0, 0, 0)
+    view = SourceViewer()
+    dlg.layout().addWidget(view)
+    with open(filename, "r") as f:
+        source = f.read()
+    view.setText(source, lineno)
+    view.resize(500, 500)
+    dlg.exec_()
+
 
 class Lexer(QsciLexerCustom):
     """
