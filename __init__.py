@@ -24,6 +24,8 @@ class CommandBar:
 
     def initGui(self):
         self.shell = qgiscommand.CommandShell(self.iface.mapCanvas())
+        self.shell.hide()
+
         self.short = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Semicolon), self.iface.mainWindow())
         self.short.setContext(Qt.ApplicationShortcut)
         self.short.activated.connect(self.shell.activated)

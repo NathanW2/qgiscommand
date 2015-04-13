@@ -66,7 +66,7 @@ class CommandShell(QsciScintilla):
     def text_changed(self):
         if not self.get_data().strip():
             return
-            
+
         try:
             completions = command.completions_for_line(self.get_data())
             if completions == self._lastcompletions:
@@ -74,7 +74,7 @@ class CommandShell(QsciScintilla):
                 return
 
             self._lastcompletions = completions
-                
+
             self.apis.cancelPreparation()
             self.apis.clear()
             for value in completions:
