@@ -188,7 +188,11 @@ class CommandShell(QsciScintilla):
     def entered(self):
         line = self.get_data()
         if not self.currentfunction:
-            gen = command.parse_line_data(line)
+            try:
+                gen = command.parse_line_data(line)
+            except command.NoFunction:
+                return
+
             if gen:
                 self.currentfunction = gen
                 line = None

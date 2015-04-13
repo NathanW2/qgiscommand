@@ -162,8 +162,8 @@ def parse_line(line):
     return funcname, func, argdata
 
 def parse_line_data(line):
+    print line
     funcname, func, argdata = parse_line(line)
-
     needed, varargs, _, _ = inspect.getargspec(func)
     if not needed and not varargs:
         func()
@@ -201,6 +201,21 @@ def parse_line_data(line):
             argdata.append(data)
 
     func(*argdata)
+
+def load_from_file(filename):
+    with open(filename, "r") as f:
+        lines = f.readlines()
+
+    for line in lines:
+        line = line.strip()
+        if line.startswith("#") or not line:
+            # Comment line
+            continue
+        funcname, func, data = parse_line(line)
+        try:
+            func(*data)
+        except KeyError:
+            continue
 
 
 ## Command line version.
