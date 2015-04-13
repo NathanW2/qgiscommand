@@ -26,7 +26,7 @@ def command(*prompts):
         name = escape_name(func.__name__)
         func_args[name] = list(reversed(prompts))
         commands[name] = func
-        help_text[name] = func.__doc__
+        help_text[name] = inspect.getdoc(func)
         sourcelookup[name] = (filename, line_number)
         return func
     return wrapper
