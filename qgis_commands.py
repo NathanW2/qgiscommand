@@ -8,23 +8,26 @@ import command
 
 project_paths = []
 
+
 @command.command("What is the x?", "What is the y?")
 def point_at(x, y):
     """
     Add a point at the x and y for the current layer
     """
-    x,y = float(x), float(y)
+    x, y = float(x), float(y)
     layer = iface.activeLayer()
     f = QgsFeature(layer.pendingFields())
-    geom = QgsGeometry.fromPoint(QgsPoint(x,y))
+    geom = QgsGeometry.fromPoint(QgsPoint(x, y))
     f.setGeometry(geom)
     layer.addFeature(f)
     iface.mapCanvas().refresh()
+
 
 @command.command("Paths?")
 def define_project_paths(paths):
     global project_paths
     project_paths = paths.split(',')
+
 
 @command.command("Name")
 def load_project(name):

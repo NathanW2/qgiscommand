@@ -14,6 +14,7 @@ from PyQt4.QtCore import *
 
 import qgiscommand
 
+
 def classFactory(iface):
     return CommandBar(iface)
 
@@ -40,4 +41,3 @@ class CommandBar:
 
     def run(self):
         self.shell.activated()
-        

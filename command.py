@@ -4,10 +4,12 @@ commands = {}
 func_args = {}
 help_text = {}
 
+
 def escape_name(funcname):
-    funcname = funcname.replace("_","-")
-    funcname = funcname.replace(" ","-")
+    funcname = funcname.replace("_", "-")
+    funcname = funcname.replace(" ", "-")
     return funcname
+
 
 def command(*prompts):
     def wrapper(func):
@@ -17,6 +19,7 @@ def command(*prompts):
         help_text[name] = func.__doc__
         return func
     return wrapper
+
 
 @command("Alias", "Function Name", "Args")
 def alias(alias, name, *args):
@@ -57,7 +60,7 @@ def parse_line_data(line):
     if not needed:
         func()
         return
-        
+
     neededcount = len(needed)
     wehavecount = len(argdatas)
     if neededcount > wehavecount:
@@ -69,7 +72,8 @@ def parse_line_data(line):
 
     func(*argdatas)
 
-## Command line version.
+# Command line version.
+
 
 def runloop():
     import readline
@@ -95,4 +99,3 @@ if __name__ == "__main__":
     runloop()
 
 # Qt Widget
-
