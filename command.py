@@ -47,7 +47,22 @@ def complete_with(**functions):
     return wrapper
 
 
+def is_comamnd(commandname):
+    if not commandname.strip():
+        return False, "Function name can not be empty"
+    if commandname in commands:
+        return True,''
+    else:
+        return False, "No command found called {}".format(commandname)
+
+def not_empty(value):
+    if not value.strip():
+        return False, "Value can no be empty"
+    return True, ""
+
+
 @command("Alias", "Function Name", "Args")
+@check(name=is_comamnd, alias=not_empty)
 def alias(alias, name, *args):
     """
     Register a alias for a function and pre set arguments
@@ -56,6 +71,14 @@ def alias(alias, name, *args):
     args = args.split()
     func = commands[escape_name(name)]
     commands[alias] = (func, args)
+
+
+def completions_for_arg(funcname, argname, userdata):
+    try:
+        completefunc = completers.get(funcname, {})[argname]
+        return completefunc(argname, userdata)
+    except KeyError:
+        return []
 
 
 def completions_for_line(line):
@@ -69,7 +92,7 @@ def completions_for_line(line):
 
     if endofline:
         index += 1
-    
+
     try:
         argname = args[index]
     except IndexError:
@@ -79,13 +102,9 @@ def completions_for_line(line):
         userdata = data[index]
     except IndexError:
         userdata = ''
-            
-    try:
-        completefunc = completers.get(funcname, {})[argname]
-        return completefunc(argname, userdata)
-    except KeyError:
-        return []
-        
+
+    return completions_for_arg(funcname, argname, userdata)
+
 
 def validators_for_function(funcname):
     return validators.get(funcname, {})
@@ -107,7 +126,7 @@ def data_valid(data, argname, checks):
         return func(data)
     except KeyError:
         return True, ""
-        
+
 def parse_line(line):
     """
     Parse the line and return the name of the called function, the Python function, and the data
@@ -139,42 +158,45 @@ def parse_line(line):
 def parse_line_data(line):
     funcname, func, argdata = parse_line(line)
 
-    needed, _, _, _ = inspect.getargspec(func)
-    if not needed:
+    needed, varargs, _, _ = inspect.getargspec(func)
+    if not needed and not varargs:
         func()
         return
+
+    if varargs:
+        needed.append(varargs)
 
     _validators = validators_for_function(funcname)
 
     # If the full input line is not valid we have to wait here until it is done
     valid, reason = line_valid(line, _validators, needed, argdata)
     while not valid:
-        prompt = "(Error: {})".format(reason)
+        prompt = "{}.".format(reason)
         data = "{} {}".format(funcname, " ".join(argdata))
         line = yield prompt, data
         funcname, func, argdata = parse_line(line)
         valid, reason = line_valid(line, _validators, needed, argdata)
-        
+
     neededcount = len(needed)
     wehavecount = len(argdata)
     if neededcount > wehavecount:
         prompts = list(reversed(func_args[funcname]))
         prompts = prompts[wehavecount:]
-        for argindex, prompt in enumerate(prompts):
+        for argindex, prompt in enumerate(prompts, start=wehavecount):
             _line = "({}) {}".format(funcname, prompt)
             data = yield _line, None
             argname = needed[argindex]
             valid, reason = data_valid(data, argname, _validators)
             while not valid:
-                _line = "({}) {} ({})".format(funcname, prompt, reason)
+                _line = "({}) {}. {}".format(funcname, reason, prompt)
                 data = yield _line, data
                 valid, reason = data_valid(data, argname, _validators)
-                    
+
             argdata.append(data)
 
     func(*argdata)
 
-        
+
 ## Command line version.
 def runloop():
     import readline
