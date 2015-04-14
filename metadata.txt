@@ -5,6 +5,7 @@ version=0.10
 qgisMinimumVersion=2.4
 author=Nathan Woodrow
 email=woodrow.nathan@gmail.com
+icon=icon.png
 
 homepage=https://github.com/NathanW2/qgiscommand
 tracker=https://github.com/NathanW2/qgiscommand

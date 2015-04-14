@@ -19,6 +19,7 @@ from qgis.core import QgsApplication
 import qgiscommand
 import command
 
+import resources_rc
 
 def classFactory(iface):
     return CommandBar(iface)
@@ -40,7 +41,9 @@ class CommandBar:
         self.shortDE.setContext(Qt.ApplicationShortcut)
         self.shortDE.activated.connect(self.shell.activated)
 
-        self.action = QAction("Open Command Bar!", self.iface.mainWindow())
+        self.action = QAction(
+            QIcon(':/plugins/qgiscommand/icon.png'),
+            "Open Command Bar!", self.iface.mainWindow())
         self.action.triggered.connect(self.run)
         self.iface.addToolBarIcon(self.action)
 
