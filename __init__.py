@@ -30,7 +30,7 @@ def load_init_file():
     initfile = os.path.join(folder, "init")
     try:
         os.makedirs(folder)
-    except WindowsError:
+    except OSError:
         pass
 
     if not os.path.exists(initfile):
