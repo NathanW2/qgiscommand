@@ -24,13 +24,33 @@ import resources_rc
 def classFactory(iface):
     return CommandBar(iface)
 
+def load_init_file():
+    # Read the init file from the python\commandbar folder
+    folder = os.path.join(QgsApplication.qgisSettingsDirPath(), "python", "commandbar")
+    initfile = os.path.join(folder, "init")
+    try:
+        os.makedirs(folder)
+    except WindowsError:
+        pass
+
+    if not os.path.exists(initfile):
+        header = "# Command bar init file. Lines starting with # are ignored"
+        with open(initfile, "w") as f:
+            f.write(header)
+    command.load_from_file(initfile)
+
+
+@command.command()
+def reload_init_file():
+    load_init_file()
+
 
 class CommandBar:
     def __init__(self, iface):
         self.iface = iface
 
     def initGui(self):
-        self.iface.initializationCompleted.connect(self.qgis_loaded)
+        self.iface.initializationCompleted.connect(load_init_file)
         self.shell = qgiscommand.CommandShell(self.iface.mapCanvas())
         self.shell.hide()
 
@@ -47,23 +67,8 @@ class CommandBar:
         self.action.triggered.connect(self.run)
         self.iface.addToolBarIcon(self.action)
 
-    def qgis_loaded(self):
-        # Read the init file from the python\commandbar folder
-        folder = os.path.join(QgsApplication.qgisSettingsDirPath(), "python", "commandbar")
-        initfile = os.path.join(folder, "init")
-        try:
-            os.makedirs(folder)
-        except WindowsError:
-            pass
-
-        if not os.path.exists(initfile):
-            header = "# Command bar init file. Lines starting with # are ignored"
-            with open(initfile, "w") as f:
-                f.write(header)
-        command.load_from_file(initfile)
-
     def unload(self):
-        self.iface.initializationCompleted.disconnect(self.qgis_loaded)
+        self.iface.initializationCompleted.disconnect(load_init_file)
         self.shell.end()
         self.iface.removeToolBarIcon(self.action)
         del self.action
