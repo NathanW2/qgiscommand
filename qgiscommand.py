@@ -5,6 +5,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.Qsci import QsciScintilla, QsciLexerCustom, QsciAPIs, QsciLexerPython
 
+
 import command
 import qgis_commands
 
@@ -12,6 +13,11 @@ reload(command)
 reload(qgis_commands)
 
 _start_prompt = "-> "
+
+import logger
+
+# logger.msg('Test message from qgiscommand.py')
+
 
 class SourceViewer(QsciScintilla):
     def __init__(self, syntax='Python', parent=None):
@@ -125,9 +131,8 @@ class CommandShell(QsciScintilla):
             self.apis.cancelPreparation()
             self.apis.clear()
             for value in completions:
-                data = "{}".format(value)
+                data = u"{}".format(value)
                 self.apis.add(data)
-
 
             self.apis.prepare()
         except command.NoFunction:
