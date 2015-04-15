@@ -9,6 +9,8 @@ validators = {}
 completers = {}
 sourcelookup = {}
 
+def commandlist(argname, userdata):
+    return commands.keys()
 
 class NoFunction(Exception):
     def __init__(self, message, funcname):

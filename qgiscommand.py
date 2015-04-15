@@ -37,9 +37,26 @@ def show_viewer(text, lineno=0, title='', syntax='Python'):
     view.resize(500, 500)
     dlg.exec_()
 
+@command.command()
+def help():
+    """
+    Show help for the command bar
+    """
+    # TODO Replace this with a html page for help 
+    helptext = """Command Bar help
+
+To get help on a command type: command-help
+
+Current commands:
+{commands}
+    """.format(commands="\n".join(command.commands.keys()))
+    name = "Command bar"
+    show_viewer(helptext, title="Help for {}".format(name), syntax='')
+
 
 @command.command("Command name")
 @command.check(name=command.is_comamnd)
+@command.complete_with(name=command.commandlist)
 def command_help(name):
     """
     Lookup the help for a given command
@@ -49,6 +66,7 @@ def command_help(name):
 
 @command.command("Command name")
 @command.check(name=command.is_comamnd)
+@command.complete_with(name=command.commandlist)
 def view_source(name):
     """
     Lookup the source code for a given command
@@ -57,7 +75,7 @@ def view_source(name):
     filename, lineno = command.sourcelookup[name]
     with open(filename, "r") as f:
         source = f.read()
-    show_viewer(source, line, filename)
+    show_viewer(source, lineno, filename)
 
 class Lexer(QsciLexerCustom):
     """
