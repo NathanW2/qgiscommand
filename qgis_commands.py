@@ -10,6 +10,10 @@ from PyQt4.QtGui import QDockWidget
 
 import command
 
+import logger
+
+# logger.msg('Test message from qgis_commands.py')
+
 def layer_by_name(layername):
     return QgsMapLayerRegistry.instance().mapLayersByName(layername)[0]
 
