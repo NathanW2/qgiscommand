@@ -1,3 +1,4 @@
+import re
 import logger
 import inspect
 
@@ -9,6 +10,8 @@ help_text = {}
 validators = {}
 completers = {}
 sourcelookup = {}
+
+command_split = re.compile(r"[^'\s]\S*|'.+?'")
 
 def commandlist(argname, userdata):
     return commands.keys()
@@ -75,12 +78,13 @@ def not_empty(value):
 
 @command("Alias", "Function Name", "Args")
 @check(name=is_comamnd, alias=not_empty)
+@complete_with(name=commandlist)
 def alias(alias, name, *args):
     """
     Register a alias for a function and pre set arguments
     """
     args = " ".join(args)
-    args = args.split()
+    args = command_split.findall(args)
     func = commands[escape_name(name)]
     commands[alias] = (func, args)
 
@@ -147,7 +151,8 @@ def parse_line(line):
     """
     Parse the line and return the name of the called function, the Python function, and the data
     """
-    data = line.split()
+
+    data = command_split.findall(line)
     line = line.strip()
     if not data or not line:
         return
