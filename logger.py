@@ -10,4 +10,4 @@ except ImportError:
 
 def msg(txt):
     if log_it:
-        QgsMessageLog.logMessage("{} id:{}".format(txt, id(msg)), category)
+        QgsMessageLog.logMessage(txt, category)
