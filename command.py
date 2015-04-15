@@ -11,7 +11,9 @@ sourcelookup = {}
 
 
 class NoFunction(Exception):
-    pass
+    def __init__(self, message, funcname):
+        super(NoFunction, self).__init__(message)
+        self.funcname = funcname
 
 
 def escape_name(funcname):
@@ -88,28 +90,32 @@ def completions_for_arg(funcname, argname, userdata):
 
 
 def completions_for_line(line):
-    endofline = line.endswith(" ")
+    if line.strip() == "":
+        return commands.keys(), ""
+
     try:
         funcname, func, data = parse_line(line)
-    except NoFunction:
-        return commands.keys()
+    except NoFunction as er:
+        return commands.keys(), er.funcname
+
     args, _, _, _ = inspect.getargspec(func)
     index = len(data) - 1
 
+    endofline = line.endswith(" ")
     if endofline:
         index += 1
 
     try:
         argname = args[index]
     except IndexError:
-        return []
+        return [], ""
 
     try:
         userdata = data[index]
     except IndexError:
         userdata = ''
 
-    return completions_for_arg(funcname, argname, userdata)
+    return completions_for_arg(funcname, argname, userdata), userdata
 
 
 def validators_for_function(funcname):
@@ -154,7 +160,7 @@ def parse_line(line):
         else:
             func = funcdef
     except KeyError:
-        raise NoFunction("No function called {}".format(funcname))
+        raise NoFunction("No function called {}".format(funcname), funcname)
 
     # Add the args that have been already set for this function
     args = data[1:]

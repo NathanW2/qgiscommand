@@ -109,29 +109,40 @@ class CommandShell(QsciScintilla):
         self.parent().installEventFilter(self)
         self.textChanged.connect(self.text_changed)
         self._lastcompletions = None
+        self.autocompletemodel = QStandardItemModel()
+        self.autocompletefilter = QSortFilterProxyModel()
+        self.autocompletefilter.setSourceModel(self.autocompletemodel)
+        self.autocompleteview = QListView(self.parent())
+        self.autocompleteview.setModel(self.autocompletefilter)
+        self.autocompleteview.hide()
+        self.selectionmodel = self.autocompleteview.selectionModel()
+
+    def adjust_auto_complete(self):
+        self.autocompleteview.resize(self.parent().width(), 100)
+        self.autocompleteview.move(0, self.parent().height() - self.height() - self.autocompleteview.height())
+
+    def add_completions(self, completions):
+        self.autocompletemodel.clear()
+        for value in completions:
+            data = "{}".format(value)
+            self.autocompletemodel.appendRow(QStandardItem(data))
+        self._lastcompletions = completions
 
     def text_changed(self):
-        if not self.get_data().strip():
-            return
+        completions, userdata = command.completions_for_line(self.get_data())
+        if not completions == self._lastcompletions:
+            self.add_completions(completions)
 
-        try:
-            completions = command.completions_for_line(self.get_data())
-            if completions == self._lastcompletions:
-                self.autoCompleteFromAPIs()
-                return
+        fuzzy = "".join(["{}.*".format(c) for c in userdata])
+        self.autocompletefilter.setFilterRegExp(fuzzy)
+        index = self.autocompletefilter.index(0, 0)
+        if index.isValid():
+            self.selectionmodel.select(index, QItemSelectionModel.Select)
 
-            self._lastcompletions = completions
+        hasdata = self.autocompletemodel.rowCount() > 0
 
-            self.apis.cancelPreparation()
-            self.apis.clear()
-            for value in completions:
-                data = "{}".format(value)
-                self.apis.add(data)
-
-
-            self.apis.prepare()
-        except command.NoFunction:
-            return
+        self.adjust_auto_complete()
+        self.autocompleteview.setVisible(hasdata)
 
     def end(self):
         self.parent().removeEventFilter(self)
@@ -147,12 +158,32 @@ class CommandShell(QsciScintilla):
             self.entered()
         elif e.key() == Qt.Key_Escape:
             self.close()
+        elif e.key() == Qt.Key_Tab:
+            self.complete()
         elif e.key() in (Qt.Key_Backspace, Qt.Key_Delete):
             _, newindex = self.getCursorPosition()
             if newindex > len(self.prompt):
                 QsciScintilla.keyPressEvent(self, e)
         else:
             QsciScintilla.keyPressEvent(self, e)
+
+    def complete(self):
+        try:
+            index = self.autocompleteview.selectedIndexes()[0]
+        except IndexError:
+            return
+
+        if index.isValid():
+            text = self.autocompletefilter.data(index)
+            line = self.get_data()
+            space = line.rfind(' ')
+            newline = line[:space + 1] + text + " "
+            self.show_prompt(self.prompt, newline)
+
+
+    def close(self):
+        self.autocompleteview.close()
+        super(CommandShell, self).close()
 
     def show_prompt(self, prompt=_start_prompt, data=None):
         self.clear()
@@ -229,11 +260,13 @@ class CommandShell(QsciScintilla):
         self.setMaximumHeight(20)
         self.resize(self.parent().width(), 20)
         self.move(0, self.parent().height() - self.height())
+        self.adjust_auto_complete()
 
     def showEvent(self, event):
         self.adjust_size()
         self.show_prompt()
         self.setFocus()
+        self.autocompleteview.show()
 
     def activated(self):
         visible = self.isVisible()

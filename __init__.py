@@ -56,10 +56,10 @@ class CommandBar:
 
         self.short = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Semicolon), self.iface.mainWindow())
         self.short.setContext(Qt.ApplicationShortcut)
-        self.short.activated.connect(self.shell.activated)
+        self.short.activated.connect(self.run)
         self.shortDE = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Comma), self.iface.mainWindow())
         self.shortDE.setContext(Qt.ApplicationShortcut)
-        self.shortDE.activated.connect(self.shell.activated)
+        self.shortDE.activated.connect(self.run)
 
         self.action = QAction(
             QIcon(':/plugins/qgiscommand/icon.png'),
@@ -74,4 +74,4 @@ class CommandBar:
         del self.action
 
     def run(self):
-        self.shell.activated()
+        self.shell.show()
