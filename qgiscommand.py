@@ -45,8 +45,7 @@ def help():
     # TODO Replace this with a html page for help 
     helptext = """Command Bar help
 
-To get help on a command type: command-help
-
+To get help on a command type: command-help 
 Current commands:
 {commands}
     """.format(commands="\n".join(command.commands.keys()))
@@ -193,6 +192,10 @@ class CommandShell(QsciScintilla):
 
         if index.isValid():
             text = self.autocompletefilter.data(index)
+            # Wrap text with space in quotes
+            if ' ' in text:
+                text = "'{}'".format(text)
+
             line = self.get_data()
             space = line.rfind(' ')
             newline = line[:space + 1] + text + " "
@@ -200,6 +203,7 @@ class CommandShell(QsciScintilla):
 
 
     def close(self):
+        self.currentfunction = None
         self.autocompleteview.close()
         super(CommandShell, self).close()
 
@@ -235,7 +239,11 @@ class CommandShell(QsciScintilla):
         return line
 
     def entered(self):
+        print self.currentfunction
         line = self.get_data()
+        if not line:
+            return
+        
         if not self.currentfunction:
             try:
                 gen = command.parse_line_data(line)
@@ -251,11 +259,14 @@ class CommandShell(QsciScintilla):
                 return
 
         try:
+            print "Sednign something to the function"
             prompt, data = self.currentfunction.send(line)
             self.show_prompt(prompt, data)
         except StopIteration:
             self.currentfunction = None
             self.show_prompt()
+        except command.NoFunction:
+            self.currentfunction = None
 
     def setLexers(self):
         loadFont = self.settings.value("pythonConsole/fontfamilytext", "Monospace")

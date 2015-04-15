@@ -167,6 +167,9 @@ def parse_line(line):
     # Add the args that have been already set for this function
     args = data[1:]
     argdata += args
+
+    # Strip single quotes from outside of strings
+    argdata = [d.strip("'") for d in argdata]
     return funcname, func, argdata
 
 def parse_line_data(line):
