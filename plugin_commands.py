@@ -1,4 +1,9 @@
+"""
+Module to handle commands to do with plugin management.
+"""
+
 import command
+import plugin_commands
 
 from pyplugin_installer import installer as plugin_installer
 
@@ -11,10 +16,13 @@ def fetch_plugins():
         global plugins_fetched
         plugins_fetched = True
 
+def plugin_name_map():
+    return {plugin['name']: plugin['id'] for plugin in plugin_installer.plugins.all().values()} 
+
 
 def plugins_for_install(argdata, userdata):
     fetch_plugins()
-    return [plugin['name'] for plugin in plugin_installer.plugins.all().values()] 
+    return plugin_name_map().keys()
 
 
 def installed_plugins(argdata, userdata):
@@ -28,7 +36,8 @@ def is_plugin(name):
     fetch_plugins()
     installer = plugin_installer.pluginInstaller
     try:
-        plugin_installer.plugins.all()[name]
+        pluginid = plugin_name_map()[name]
+        plugin_installer.plugins.all()[pluginid]
         return True, ""
     except KeyError:
         return False, "Plugin not found in installer"
@@ -38,13 +47,16 @@ def is_plugin(name):
 @command.check(name=is_plugin)
 @command.complete_with(name=plugins_for_install)
 def plugin_install(name):
+    print name
     installer = plugin_installer.pluginInstaller
-    installer.installPlugin(name)
+    pluginid = plugin_name_map()[name]
+    installer.installPlugin(pluginid)
 
 
 @command.command("Plugin name")
 @command.check(name=is_plugin)
 @command.complete_with(name=installed_plugins)
 def plugin_uninstall(name):
+    print name
     installer = plugin_installer.pluginInstaller
-    installer.uninstallPlugin(name, quiet=True)
+    installer.uninstallPlugin(pluginid, quiet=True)

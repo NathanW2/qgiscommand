@@ -7,8 +7,9 @@ from qgis.utils import iface
 
 from PyQt4.QtGui import QDockWidget
 
-import plugins
 import command
+
+from plugin_commands import *
 
 import logger
 

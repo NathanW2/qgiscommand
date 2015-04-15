@@ -1,3 +1,4 @@
+import logger
 import inspect
 
 commands = {}
@@ -27,6 +28,7 @@ def escape_name(funcname):
 def command(*prompts):
     (_, filename, line_number, _, _, _) = inspect.getouterframes(inspect.currentframe())[1]
     def wrapper(func):
+        logger.msg(str(func))
         name = escape_name(func.__name__)
         func_args[name] = list(reversed(prompts))
         commands[name] = func

@@ -5,12 +5,8 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.Qsci import QsciScintilla, QsciLexerCustom, QsciAPIs, QsciLexerPython
 
-
 import command
 import qgis_commands
-
-reload(command)
-reload(qgis_commands)
 
 _start_prompt = "-> "
 
@@ -147,7 +143,7 @@ class CommandShell(QsciScintilla):
     def add_completions(self, completions):
         self.autocompletemodel.clear()
         for value in completions:
-            data = "{}".format(value)
+            data = u"{}".format(unicode(value))
             self.autocompletemodel.appendRow(QStandardItem(data))
         self._lastcompletions = completions
 
