@@ -1,5 +1,4 @@
 import re
-import logger
 import inspect
 
 commands = {}
@@ -10,46 +9,73 @@ command_split = re.compile(r"[^'\s]\S*|'.+?'")
 class CommandObject(object):
     def __init__(self, funcname, func, prompts=None, helptext=None,
                  validators=None, completers=None, sourcelookup=None,
-                presetdata=None):
+                 presetdata=None):
         self.func = func
         self.funcname = funcname
-        self.prompts = prompts 
+        self.prompts = prompts
         self.helptext = helptext
         if not presetdata:
             presetdata = []
-        self.presetdata = presetdata
         if not validators:
             self.validators = {}
 
         if not completers:
             self.completers = {}
 
+        self.presetdata = presetdata
         self.sourcelookup = sourcelookup
+        self.argdata = {}
+
+    @property
+    def args_needed(self):
+        needed, varargs, _, _ = inspect.getargspec(self.func)
+
+        if varargs:
+            needed.append(varargs)
+
+        return needed
+
 
     def __iter__(self):
-        needed, varargs, _, _ = inspect.getargspec(self.func)
+        return iter(self.prompts)
+
+    def remaining_prompts(self):
+        """
+        Return a generator of the remaining prompts that are needed.
+        """
+        needed = self.args_needed
         neededcount = len(needed)
         wehavecount = len(self.presetdata)
         if neededcount > wehavecount:
             prompts = self.prompts[wehavecount:]
             for argindex, prompt in enumerate(prompts, start=wehavecount):
                 _line = "({}) {}".format(self.funcname, prompt)
-                data = yield _line, None
                 argname = needed[argindex]
-                valid, reason = data_valid(data, argname, self.validators)
-                while not valid:
-                    _line = "({}) {}. {}".format(self.funcname, reason, prompt)
-                    data = yield _line, data
-                    valid, reason = data_valid(data, argname, self.validators)
+                yield _line, argname
 
-                argdata.append(data)
+    def data_valid(self, argname, data):
+        """
+        Check the given data is valid for the argument.  -> (bool, str)
+        """
+        try:
+            func = self.validators[argname]
+            return func(data)
+        except KeyError:
+            return True, ""
+
+    def set_arg_data(self, argname, data):
+        """
+        Set the data for the given argument.
+        """
+        if argname in self.args_needed:
+            self.argdata[argname] = data
 
     def __call__(self, *args, **kwargs):
         """
         Call the underlying function
         """
         return self.func(*args, **kwargs)
-                
+
     def completions_for_arg(self, argname, userdata):
         try:
             completefunc = self.completers[argname]
@@ -75,8 +101,8 @@ def find_or_create_command_object(func):
         return commands[name]
     except KeyError:
         return create_command_object(func)
-        
-    
+
+
 class NoFunction(Exception):
     def __init__(self, message, funcname):
         super(NoFunction, self).__init__(message)
@@ -94,12 +120,14 @@ def command(*prompts):
      _) = inspect.getouterframes(inspect.currentframe())[1]
 
     def wrapper(func):
-        logger.msg(str(func))
         name = escape_name(func.__name__)
         promopts = list(reversed(prompts))
         helptext = inspect.getdoc(func)
         source = (filename, line_number)
-        cmd = CommandObject(name, func, prompts=promopts, helptext=helptext, sourcelookup=source)
+        cmd = find_or_create_command_object(func)
+        cmd.prompts = promopts
+        cmd.helptext = helptext
+        cmd.sourcelookup = source
         commands[name] = cmd
         return func
 
@@ -199,12 +227,6 @@ def line_valid(line, checks, args, argdata):
     return True, ""
 
 
-def data_valid(data, argname, checks):
-    try:
-        func = checks[argname]
-        return func(data)
-    except KeyError:
-        return True, ""
 
 
 def parse_line(line):
@@ -231,14 +253,6 @@ def parse_line(line):
 
 def parse_line_data(line):
     cmdobj = parse_line(line)
-    if not needed and not varargs:
-        cmdobj()
-
-    if varargs:
-        needed.append(varargs)
-
-    _validators = cmdobj.validators
-
     # If the full input line is not valid we have to wait here until it is done
     # argdata = cmdobj.presetdata
     # valid, reason = line_valid(line, _validators, needed, argdata)
@@ -248,7 +262,7 @@ def parse_line_data(line):
     #     line = yield prompt, data
     #     funcname, func, argdata = parse_line(line)
     #     valid, reason = line_valid(line, _validators, needed, argdata)
-            
+
     return cmdobj
 
 
