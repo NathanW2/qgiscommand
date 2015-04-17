@@ -1,10 +1,11 @@
 [general]
 name=Command Bar
 description=A command bar interface for QGIS.  Always for easy entry of commands.  New commands can be created using Python
-version=0.2
-qgisMinimumVersion=2.8
+version=0.16
+qgisMinimumVersion=2.4
 author=Nathan Woodrow
 email=woodrow.nathan@gmail.com
+icon=icon.png
 
 homepage=https://github.com/NathanW2/qgiscommand
 tracker=https://github.com/NathanW2/qgiscommand
