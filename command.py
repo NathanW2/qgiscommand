@@ -13,8 +13,10 @@ sourcelookup = {}
 
 command_split = re.compile(r"[^'\s]\S*|'.+?'")
 
+
 def commandlist(argname, userdata):
     return commands.keys()
+
 
 class NoFunction(Exception):
     def __init__(self, message, funcname):
@@ -29,7 +31,9 @@ def escape_name(funcname):
 
 
 def command(*prompts):
-    (_, filename, line_number, _, _, _) = inspect.getouterframes(inspect.currentframe())[1]
+    (_, filename, line_number, _, _,
+     _) = inspect.getouterframes(inspect.currentframe())[1]
+
     def wrapper(func):
         logger.msg(str(func))
         name = escape_name(func.__name__)
@@ -38,6 +42,7 @@ def command(*prompts):
         help_text[name] = inspect.getdoc(func)
         sourcelookup[name] = (filename, line_number)
         return func
+
     return wrapper
 
 
@@ -48,6 +53,7 @@ def check(**checks):
         block.update(checks)
         validators[name] = block
         return func
+
     return wrapper
 
 
@@ -58,6 +64,7 @@ def complete_with(**functions):
         block.update(functions)
         completers[name] = block
         return func
+
     return wrapper
 
 
@@ -65,7 +72,7 @@ def is_comamnd(commandname):
     if not commandname.strip():
         return False, "Function name can not be empty"
     if commandname in commands:
-        return True,''
+        return True, ''
     else:
         return False, "No command found called {}".format(commandname)
 
@@ -140,12 +147,14 @@ def line_valid(line, checks, args, argdata):
             continue
     return True, ""
 
+
 def data_valid(data, argname, checks):
     try:
         func = checks[argname]
         return func(data)
     except KeyError:
         return True, ""
+
 
 def parse_line(line):
     """
@@ -178,6 +187,7 @@ def parse_line(line):
     # Strip single quotes from outside of strings
     argdata = [d.strip("'") for d in argdata]
     return funcname, func, argdata
+
 
 def parse_line_data(line):
     print line
@@ -220,6 +230,7 @@ def parse_line_data(line):
 
     func(*argdata)
 
+
 def load_from_file(filename):
     with open(filename, "r") as f:
         lines = f.readlines()
@@ -256,7 +267,6 @@ def runloop():
                 prompt, data = gen.send(inputdata)
         except StopIteration:
             continue
-
 
 # if __name__ == "__main__":
 #     runloop()

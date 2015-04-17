@@ -9,6 +9,7 @@ from pyplugin_installer import installer as plugin_installer
 
 plugins_fetched = False
 
+
 def fetch_plugins():
     installer = plugin_installer.pluginInstaller
     if not plugins_fetched:
@@ -16,8 +17,12 @@ def fetch_plugins():
         global plugins_fetched
         plugins_fetched = True
 
+
 def plugin_name_map():
-    return {plugin['name']: plugin['id'] for plugin in plugin_installer.plugins.all().values()} 
+    return {
+        plugin['name']: plugin['id']
+        for plugin in plugin_installer.plugins.all().values()
+    }
 
 
 def plugins_for_install(argdata, userdata):
@@ -28,7 +33,9 @@ def plugins_for_install(argdata, userdata):
 def installed_plugins(argdata, userdata):
     fetch_plugins()
     status = ['installed', 'upgradeable']
-    return [plugin['name'] for plugin in plugin_installer.plugins.all().values() if plugin['status'] in status] 
+    return [plugin['name']
+            for plugin in plugin_installer.plugins.all().values()
+            if plugin['status'] in status]
 
 
 def is_plugin(name):

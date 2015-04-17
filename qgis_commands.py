@@ -15,8 +15,10 @@ import logger
 
 # logger.msg('Test message from qgis_commands.py')
 
+
 def layer_by_name(layername):
     return QgsMapLayerRegistry.instance().mapLayersByName(layername)[0]
+
 
 project_paths = []
 
@@ -39,7 +41,7 @@ def point_at(x, y):
 def define_project_paths(paths):
     global project_paths
     project_paths = paths.split(',')
- 
+
 
 def complete_projects(argname, data):
     # TODO Add auto complete for paths
@@ -67,12 +69,12 @@ def load_project(name):
 
 
 @command.command("Latitude in DMS?", "Longitude in DMS?")
-def dms (lat, lon):
+def dms(lat, lon):
     """
     Add a point at the lat and lon for the current layer using DMS notation
     """
 
-    lat,lon = lat, lon
+    lat, lon = lat, lon
 
     l_lat = lat.upper().split()
     l_lon = lon.upper().split()
@@ -80,25 +82,28 @@ def dms (lat, lon):
     # need to add validation tests
 
     if l_lat[3] == 'N':
-        ddlat = float(l_lat[0])+(float(l_lat[1])/60)+float(l_lat[2])/3600
+        ddlat = float(l_lat[0]) + (float(l_lat[1]) / 60) + float(l_lat[2]) / 3600
     elif l_lat[3] == 'S':
-        ddlat = (float(l_lat[0])+float(l_lat[1])/60+float(l_lat[2])/3600)*-1
+        ddlat = (float(l_lat[0]) + float(l_lat[1]) / 60 + float(l_lat[2]) /
+                 3600) * -1
     else:
         ddlat = '0'
 
-    if l_lon [3] == 'E':
-        ddlon = float(l_lon[0])+float(l_lon[1])/60+float(l_lon[2])/3600
+    if l_lon[3] == 'E':
+        ddlon = float(l_lon[0]) + float(l_lon[1]) / 60 + float(l_lon[2]) / 3600
     elif l_lon[3] == 'W':
-        ddlon = (float(l_lon[0])+float(l_lon[1])/60+float(l_lon[2])/3600)*-1
+        ddlon = (float(l_lon[0]) + float(l_lon[1]) / 60 + float(l_lon[2]) /
+                 3600) * -1
     else:
         ddlon = '0'
 
     layer = iface.activeLayer()
     f = QgsFeature(layer.pendingFields())
-    geom = QgsGeometry.fromPoint(QgsPoint(ddlon,ddlat))
+    geom = QgsGeometry.fromPoint(QgsPoint(ddlon, ddlat))
     f.setGeometry(geom)
     layer.addFeature(f)
     iface.mapCanvas().refresh()
+
 
 @command.command()
 def hide_docks():
@@ -106,8 +111,11 @@ def hide_docks():
     for dock in docks:
         dock.setVisible(False)
 
+
 def vector_layers(argname, data):
-    return [layer.name() for layer in QgsMapLayerRegistry.instance().mapLayers().values()]
+    return [layer.name()
+            for layer in QgsMapLayerRegistry.instance().mapLayers().values()]
+
 
 def is_vector_layer(data):
     try:
@@ -119,6 +127,7 @@ def is_vector_layer(data):
             return False, "Is not vector layer"
     except IndexError:
         return False, "Layer not found"
+
 
 @command.command("layer name")
 @command.complete_with(tablename=vector_layers)

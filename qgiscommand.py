@@ -39,12 +39,13 @@ def show_viewer(text, lineno=0, title='', syntax='Python'):
     view.resize(500, 500)
     dlg.exec_()
 
+
 @command.command()
 def help():
     """
     Show help for the command bar
     """
-    # TODO Replace this with a html page for help 
+    # TODO Replace this with a html page for help
     helptext = """Command Bar help
 
 To get help on a command type: command-help 
@@ -65,6 +66,7 @@ def command_help(name):
     helptext = command.help_text[name]
     show_viewer(helptext, title="Help for {}".format(name), syntax='')
 
+
 @command.command("Command name")
 @command.check(name=command.is_comamnd)
 @command.complete_with(name=command.commandlist)
@@ -78,16 +80,15 @@ def view_source(name):
         source = f.read()
     show_viewer(source, lineno, filename)
 
+
 class Lexer(QsciLexerCustom):
     """
     Note: Crashes at the momemnt
     """
+
     def __init__(self, parent=None):
         QsciLexerCustom.__init__(self, parent)
-        self._styles = {
-            0: 'Default',
-            1: 'Function',
-            }
+        self._styles = {0: 'Default', 1: 'Function', }
         for key, value in self._styles.iteritems():
             setattr(self, value, key)
 
@@ -138,7 +139,8 @@ class CommandShell(QsciScintilla):
 
     def adjust_auto_complete(self):
         self.autocompleteview.resize(self.parent().width(), 100)
-        self.autocompleteview.move(0, self.parent().height() - self.height() - self.autocompleteview.height())
+        self.autocompleteview.move(0, self.parent().height() - self.height() -
+                                   self.autocompleteview.height())
 
     def add_completions(self, completions):
         self.autocompletemodel.clear()
@@ -203,7 +205,6 @@ class CommandShell(QsciScintilla):
             newline = line[:space + 1] + text + " "
             self.show_prompt(self.prompt, newline)
 
-
     def close(self):
         self.currentfunction = None
         self.autocompleteview.close()
@@ -245,7 +246,7 @@ class CommandShell(QsciScintilla):
         line = self.get_data()
         if not line:
             return
-        
+
         if not self.currentfunction:
             try:
                 gen = command.parse_line_data(line)
@@ -271,7 +272,8 @@ class CommandShell(QsciScintilla):
             self.currentfunction = None
 
     def setLexers(self):
-        loadFont = self.settings.value("pythonConsole/fontfamilytext", "Monospace")
+        loadFont = self.settings.value("pythonConsole/fontfamilytext",
+                                       "Monospace")
         fontSize = self.settings.value("pythonConsole/fontsize", 10, type=int)
 
         font = QFont(loadFont)
