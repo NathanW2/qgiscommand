@@ -37,7 +37,7 @@ class CommandObject(object):
 
 
     def __iter__(self):
-        return iter(self.prompts)
+        return reversed(self.prompts)
 
     def remaining_prompts(self):
         """
@@ -46,6 +46,7 @@ class CommandObject(object):
         needed = self.args_needed
         neededcount = len(needed)
         wehavecount = len(self.presetdata)
+        prompts = list(self)
         if neededcount > wehavecount:
             prompts = self.prompts[wehavecount:]
             for argindex, prompt in enumerate(prompts, start=wehavecount):
@@ -70,11 +71,11 @@ class CommandObject(object):
         if argname in self.args_needed:
             self.argdata[argname] = data
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self):
         """
         Call the underlying function
         """
-        return self.func(*args, **kwargs)
+        return self.func(**self.argdata)
 
     def completions_for_arg(self, argname, userdata):
         try:
