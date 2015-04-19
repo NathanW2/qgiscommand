@@ -79,7 +79,7 @@ def is_comamnd(commandname):
 
 def not_empty(value):
     if not value.strip():
-        return False, "Value can no be empty"
+        return False, "Value can not be empty"
     return True, ""
 
 
@@ -151,9 +151,20 @@ def line_valid(line, checks, args, argdata):
 def data_valid(data, argname, checks):
     try:
         func = checks[argname]
-        return func(data)
+        if hasattr(func, "__iter__"):
+            failed = []
+            for f in func:
+               valid, reason = f(data) 
+               if not valid:
+                   failed.append(reason)
+            if failed:
+                return False, "\n".join(failed)
+        else:
+            return func(data)
     except KeyError:
         return True, ""
+
+    return True, ""
 
 
 def parse_line(line):
@@ -231,6 +242,15 @@ def parse_line_data(line):
     func(*argdata)
 
 
+def exists(path):
+    if os.path.exists(path):
+        return True, ""
+    else:
+        return False, "File does not exist"
+
+
+@command("File name")
+@check(filename=(not_empty, exists))
 def load_from_file(filename):
     with open(filename, "r") as f:
         lines = f.readlines()
@@ -267,8 +287,3 @@ def runloop():
                 prompt, data = gen.send(inputdata)
         except StopIteration:
             continue
-
-# if __name__ == "__main__":
-#     runloop()
-
-# Qt Widget
