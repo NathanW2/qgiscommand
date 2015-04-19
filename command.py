@@ -29,7 +29,7 @@ class NoFunction(Exception):
 def escape_name(funcname):
     funcname = funcname.replace("_", "-")
     funcname = funcname.replace(" ", "-")
-    return funcname
+    return funcname.lower()
 
 
 def command(*prompts):
