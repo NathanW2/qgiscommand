@@ -2,7 +2,7 @@ from command import escape_name
 from nose.tools import assert_equal
 
 
-class TestCommandObject(object):
+class TestCommandNaming(object):
     def test_escape_name_should_replace_underscore_with_dash(self):
         inname = "test_name"
         expected = "test-name"
