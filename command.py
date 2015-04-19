@@ -2,6 +2,8 @@ import re
 import logger
 import inspect
 
+
+history = []
 commands = {}
 func_args = {}
 help_text = {}
@@ -205,6 +207,7 @@ def parse_line_data(line):
     funcname, func, argdata = parse_line(line)
     needed, varargs, _, _ = inspect.getargspec(func)
     if not needed and not varargs:
+        history.append(funcname)
         func()
         return
 
@@ -239,6 +242,8 @@ def parse_line_data(line):
 
             argdata.append(data)
 
+    line = "{} {}".format(funcname, " ".join(argdata))
+    history.append(line)
     func(*argdata)
 
 
