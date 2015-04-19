@@ -203,7 +203,10 @@ def parse_line(line):
 
 
 def parse_line_data(line):
-    print line
+    if line == "!!" and history:
+        parse_line_data(history[-1])
+        return
+    
     funcname, func, argdata = parse_line(line)
     needed, varargs, _, _ = inspect.getargspec(func)
     if not needed and not varargs:
