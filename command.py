@@ -168,6 +168,13 @@ def data_valid(data, argname, checks):
 
     return True, ""
 
+def split_line(line):
+    """
+    Split the line into parts
+    """
+    data = command_split.findall(line)
+    return data
+
 
 def parse_line(line):
     """
