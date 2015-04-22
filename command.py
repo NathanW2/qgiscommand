@@ -294,7 +294,7 @@ def run_last_command():
     Runs the last command again. (Alias -> !!)
     """
     try:
-        parse_line_data (history[-1])
+        parse_line_data(history[-1])
     except IndexError:
         pass
 
