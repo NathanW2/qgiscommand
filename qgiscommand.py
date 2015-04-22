@@ -136,6 +136,9 @@ class CommandShell(QsciScintilla):
         self.autocompleteview.setModel(self.autocompletefilter)
         self.autocompleteview.hide()
         self.selectionmodel = self.autocompleteview.selectionModel()
+        # command.register_command(self.run_last_command,
+        #                          alias="!!",
+        #                          nohistory=True)
 
     def adjust_auto_complete(self):
         self.autocompleteview.resize(self.parent().width(), 100)
@@ -241,9 +244,17 @@ class CommandShell(QsciScintilla):
         line = line[len(self.prompt):]
         return line
 
-    def entered(self):
-        print self.currentfunction
-        line = self.get_data()
+    def run_last_command(self):
+        """
+        Runs the last command again. (Alias -> !!)
+        """
+        try:
+            line = command.history[-1]
+            self.run_line(line)
+        except IndexError:
+            pass
+
+    def run_line(self, line):
         if not line:
             return
 
@@ -262,7 +273,6 @@ class CommandShell(QsciScintilla):
                 return
 
         try:
-            print "Sednign something to the function"
             prompt, data = self.currentfunction.send(line)
             self.show_prompt(prompt, data)
         except StopIteration:
@@ -270,6 +280,10 @@ class CommandShell(QsciScintilla):
             self.show_prompt()
         except command.NoFunction:
             self.currentfunction = None
+
+    def entered(self):
+        line = self.get_data()
+        self.run_line(line)
 
     def setLexers(self):
         loadFont = self.settings.value("pythonConsole/fontfamilytext",

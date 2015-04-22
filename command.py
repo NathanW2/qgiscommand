@@ -12,6 +12,7 @@ help_text = {}
 validators = {}
 completers = {}
 sourcelookup = {}
+nohistory = []
 
 command_split = re.compile(r"[^'\s]\S*|'.+?'")
 
@@ -48,9 +49,20 @@ def command(*prompts, **kwargs):
             alias(a, name)
         except KeyError:
             pass
+
+        if kwargs.get("nohistory", False):
+            nohistory.append(name)
         return func
 
     return wrapper
+
+
+def register_command(func, prompts=None, **kwargs):
+    if not prompts:
+        prompts = []
+    wrapper = command(*prompts, **kwargs)
+    func = wrapper(func)
+    return func
 
 
 def check(**checks):
@@ -187,11 +199,15 @@ def parse_line(line):
     return funcname, func, argdata
 
 
-def parse_line_data(line):
+def parse_line_data(line, record=True):
+    """
+    Parse and execute the given command line.
+    """
     funcname, func, argdata = parse_line(line)
     needed, varargs, _, _ = inspect.getargspec(func)
     if not needed and not varargs:
-        history.append(funcname)
+        if record and funcname not in nohistory:
+            history.append(funcname)
         func()
         return
 
@@ -226,8 +242,9 @@ def parse_line_data(line):
 
             argdata.append(data)
 
-    line = "{} {}".format(funcname, " ".join(argdata))
-    history.append(line)
+    if record and funcname not in nohistory:
+        line = "{} {}".format(funcname, " ".join(argdata))
+        history.append(line)
     func(*argdata)
 
 
@@ -286,17 +303,6 @@ def alias(alias, name, *args):
     commands[alias] = (func, args)
     help_text[alias] = help_text[name]
     sourcelookup[alias] = sourcelookup[name]
-
-
-@command(alias="!!")
-def run_last_command():
-    """
-    Runs the last command again. (Alias -> !!)
-    """
-    try:
-        parse_line_data(history[-1])
-    except IndexError:
-        pass
 
 
 # Command line version.
