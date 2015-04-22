@@ -133,6 +133,7 @@ class CommandShell(QsciScintilla):
         self.autocompletefilter = QSortFilterProxyModel()
         self.autocompletefilter.setSourceModel(self.autocompletemodel)
         self.autocompleteview = QListView(self.parent())
+        self.autocompleteview.setStyleSheet("QListView::item:selected {border: 1px solid black; }")
         self.autocompleteview.setModel(self.autocompletefilter)
         self.autocompleteview.hide()
         self.selectionmodel = self.autocompleteview.selectionModel()
@@ -161,7 +162,9 @@ class CommandShell(QsciScintilla):
         self.autocompletefilter.setFilterRegExp(fuzzy)
         index = self.autocompletefilter.index(0, 0)
         if index.isValid():
-            self.selectionmodel.select(index, QItemSelectionModel.Select)
+            self.selectionmodel.clear()
+            self.selectionmodel.select(index, QItemSelectionModel.SelectCurrent)
+            self.autocompleteview.scrollTo(index, QAbstractItemView.EnsureVisible)
 
         hasdata = self.autocompletemodel.rowCount() > 0
 
@@ -177,6 +180,28 @@ class CommandShell(QsciScintilla):
             self.adjust_size()
         return QWidget.eventFilter(self, object, event)
 
+    def move_autocomplete(self, amount):
+        try:
+            index = self.autocompleteview.selectedIndexes()[0]
+        except IndexError:
+            return
+
+        row = index.row()
+        row += amount
+        if row > self.autocompletefilter.rowCount() - 1:
+            # Wrap to top
+            row = 0
+        elif row < 0:
+            # Wrap to bottom
+            row = self.autocompletefilter.rowCount() - 1
+
+        print row
+        index = self.autocompletefilter.index(row, 0)
+        print index.isValid()
+        if index.isValid():
+            self.selectionmodel.select(index, QItemSelectionModel.SelectCurrent)
+            self.autocompleteview.scrollTo(index, QAbstractItemView.EnsureVisible)
+
     def keyPressEvent(self, e):
         if e.key() in (Qt.Key_Return, Qt.Key_Enter):
             self.entered()
@@ -188,6 +213,10 @@ class CommandShell(QsciScintilla):
             _, newindex = self.getCursorPosition()
             if newindex > len(self.prompt):
                 QsciScintilla.keyPressEvent(self, e)
+        elif e.key() == Qt.Key_Up:
+            self.move_autocomplete(-1)
+        elif e.key() == Qt.Key_Down:
+            self.move_autocomplete(1)
         else:
             QsciScintilla.keyPressEvent(self, e)
 
