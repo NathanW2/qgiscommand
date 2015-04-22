@@ -1,7 +1,7 @@
+import os
 import re
 import logger
 import inspect
-
 
 history = []
 commands = {}
@@ -32,7 +32,7 @@ def escape_name(funcname):
     return funcname.lower()
 
 
-def command(*prompts):
+def command(*prompts, **kwargs):
     (_, filename, line_number, _, _,
      _) = inspect.getouterframes(inspect.currentframe())[1]
 
@@ -43,6 +43,11 @@ def command(*prompts):
         commands[name] = func
         help_text[name] = inspect.getdoc(func)
         sourcelookup[name] = (filename, line_number)
+        try:
+            a = kwargs['alias']
+            alias(a, name)
+        except KeyError:
+            pass
         return func
 
     return wrapper
@@ -68,34 +73,6 @@ def complete_with(**functions):
         return func
 
     return wrapper
-
-
-def is_comamnd(commandname):
-    if not commandname.strip():
-        return False, "Function name can not be empty"
-    if commandname in commands:
-        return True, ''
-    else:
-        return False, "No command found called {}".format(commandname)
-
-
-def not_empty(value):
-    if not value.strip():
-        return False, "Value can not be empty"
-    return True, ""
-
-
-@command("Alias", "Function Name", "Args")
-@check(name=is_comamnd, alias=not_empty)
-@complete_with(name=commandlist)
-def alias(alias, name, *args):
-    """
-    Register a alias for a function and pre set arguments
-    """
-    args = " ".join(args)
-    args = command_split.findall(args)
-    func = commands[escape_name(name)]
-    commands[alias] = (func, args)
 
 
 def completions_for_arg(funcname, argname, userdata):
@@ -156,9 +133,9 @@ def data_valid(data, argname, checks):
         if hasattr(func, "__iter__"):
             failed = []
             for f in func:
-               valid, reason = f(data) 
-               if not valid:
-                   failed.append(reason)
+                valid, reason = f(data)
+                if not valid:
+                    failed.append(reason)
             if failed:
                 return False, "\n".join(failed)
         else:
@@ -167,6 +144,7 @@ def data_valid(data, argname, checks):
         return True, ""
 
     return True, ""
+
 
 def split_line(line):
     """
@@ -210,10 +188,6 @@ def parse_line(line):
 
 
 def parse_line_data(line):
-    if line == "!!" and history:
-        parse_line_data(history[-1])
-        return
-    
     funcname, func, argdata = parse_line(line)
     needed, varargs, _, _ = inspect.getargspec(func)
     if not needed and not varargs:
@@ -257,6 +231,21 @@ def parse_line_data(line):
     func(*argdata)
 
 
+def is_comamnd(commandname):
+    if not commandname.strip():
+        return False, "Function name can not be empty"
+    if commandname in commands:
+        return True, ''
+    else:
+        return False, "No command found called {}".format(commandname)
+
+
+def not_empty(value):
+    if not value.strip():
+        return False, "Value can not be empty"
+    return True, ""
+
+
 def exists(path):
     if os.path.exists(path):
         return True, ""
@@ -282,7 +271,35 @@ def load_from_file(filename):
             continue
 
 
-## Command line version.
+@command("Alias", "Function Name", "Args")
+@check(name=is_comamnd, alias=not_empty)
+@complete_with(name=commandlist)
+def alias(alias, name, *args):
+    """
+    Register a alias for a function and pre set arguments
+    """
+    args = " ".join(args)
+    args = command_split.findall(args)
+    name = escape_name(name)
+    func = commands[name]
+    alias = alias.lower()
+    commands[alias] = (func, args)
+    help_text[alias] = help_text[name]
+    sourcelookup[alias] = sourcelookup[name]
+
+
+@command(alias="!!")
+def run_last_command():
+    """
+    Runs the last command again. (Alias -> !!)
+    """
+    try:
+        parse_line_data (history[-1])
+    except IndexError:
+        pass
+
+
+# Command line version.
 def runloop():
     import readline
 
