@@ -195,9 +195,7 @@ class CommandShell(QsciScintilla):
             # Wrap to bottom
             row = self.autocompletefilter.rowCount() - 1
 
-        print row
         index = self.autocompletefilter.index(row, 0)
-        print index.isValid()
         if index.isValid():
             self.selectionmodel.select(index, QItemSelectionModel.SelectCurrent)
             self.autocompleteview.scrollTo(index, QAbstractItemView.EnsureVisible)
