@@ -19,8 +19,8 @@ def point_at(x, y):
     iface.mapCanvas().refresh()
 
 
-@command.command("Latitude in DMS?", "Longitude in DMS?")
-def dms(lat, lon):
+@command.command("Latitude in DMS?", "Longitude in DMS?", alias=['dms'])
+def point_at_dms(lat, lon):
     """
     Add a point at the lat and lon for the current layer using DMS notation
     """
@@ -56,7 +56,7 @@ def dms(lat, lon):
     iface.mapCanvas().refresh()
 
 
-@command.command("Latitude in DMS?", "Longitude in DMS?")
+@command.command("Latitude in DMS?", "Longitude in DMS?", alias=['move-dms'])
 def feature_move_dms(lat, lon):
     """
     Add a point at the lat and lon for the current layer using DMS notation

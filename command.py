@@ -45,8 +45,12 @@ def command(*prompts, **kwargs):
         help_text[name] = inspect.getdoc(func)
         sourcelookup[name] = (filename, line_number)
         try:
-            a = kwargs['alias']
-            alias(a, name)
+            _aliases = kwargs['alias']
+            if not hasattr(_aliases, "__iter__"):
+                _aliases = [_aliases]
+
+            for _alias in _aliases:
+                alias(_alias, name)
         except KeyError:
             pass
 
