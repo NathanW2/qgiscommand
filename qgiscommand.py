@@ -132,7 +132,8 @@ class CommandShell(QsciScintilla):
         self.autocompletefilter = QSortFilterProxyModel()
         self.autocompletefilter.setSourceModel(self.autocompletemodel)
         self.autocompleteview = QListView(self.parent())
-        self.autocompleteview.setStyleSheet("QListView::item:selected {border: 1px solid black; }")
+        self.autocompleteview.setStyleSheet(
+            "QListView::item:selected {border: 1px solid black; }")
         self.autocompleteview.setModel(self.autocompletefilter)
         self.autocompleteview.hide()
         self.selectionmodel = self.autocompleteview.selectionModel()
@@ -164,7 +165,8 @@ class CommandShell(QsciScintilla):
         if index.isValid():
             self.selectionmodel.clear()
             self.selectionmodel.select(index, QItemSelectionModel.SelectCurrent)
-            self.autocompleteview.scrollTo(index, QAbstractItemView.EnsureVisible)
+            self.autocompleteview.scrollTo(index,
+                                           QAbstractItemView.EnsureVisible)
 
         hasdata = self.autocompletemodel.rowCount() > 0
 
@@ -198,7 +200,8 @@ class CommandShell(QsciScintilla):
         index = self.autocompletefilter.index(row, 0)
         if index.isValid():
             self.selectionmodel.select(index, QItemSelectionModel.SelectCurrent)
-            self.autocompleteview.scrollTo(index, QAbstractItemView.EnsureVisible)
+            self.autocompleteview.scrollTo(index,
+                                           QAbstractItemView.EnsureVisible)
 
     def keyPressEvent(self, e):
         if e.key() in (Qt.Key_Return, Qt.Key_Enter):
