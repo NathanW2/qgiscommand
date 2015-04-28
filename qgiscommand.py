@@ -115,7 +115,6 @@ class CommandShell(QsciScintilla):
         self.lex = QsciLexerPython(self)
         self.apis = QsciAPIs(self.lex)
         self.lex.setAPIs(self.apis)
-        self.setLexers()
         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
         self.SendScintilla(QsciScintilla.SCI_SETVSCROLLBAR, 0)
         self.setFolding(0)
@@ -140,6 +139,7 @@ class CommandShell(QsciScintilla):
         # command.register_command(self.run_last_command,
         #                          alias="!!",
         #                          nohistory=True)
+        self.setLexers()
 
     def adjust_auto_complete(self):
         self.autocompleteview.resize(self.parent().width(), 100)
@@ -328,6 +328,8 @@ class CommandShell(QsciScintilla):
         self.lex.setFont(font)
         self.lex.setDefaultFont(font)
         self.setLexer(self.lex)
+
+        self.autocompleteview.setFont(font)
 
     def adjust_size(self):
         fm = QFontMetrics(self.font())
