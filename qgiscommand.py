@@ -239,6 +239,12 @@ class CommandShell(QsciScintilla):
             self.show_prompt(self.prompt, newline)
 
     def close(self):
+        if self.currentfunction:
+            # If there is a current function we don't kill the bar just the
+            # current function
+            self.currentfunction = None
+            self.show_prompt()
+            return
         self.currentfunction = None
         self.autocompleteview.close()
         super(CommandShell, self).close()
