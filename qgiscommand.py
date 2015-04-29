@@ -137,6 +137,7 @@ class CommandShell(QsciScintilla):
         self.autocompleteview.setModel(self.autocompletefilter)
         self.autocompleteview.hide()
         self.selectionmodel = self.autocompleteview.selectionModel()
+        self.autocompleteview.setEditTriggers(QAbstractItemView.NoEditTriggers)
         # command.register_command(self.run_last_command,
         #                          alias="!!",
         #                          nohistory=True)
