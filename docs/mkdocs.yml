@@ -3,4 +3,5 @@ pages:
 - [index.md, Home]
 - [api.md, API]
 - [plugin_commands.md, Adding Commands from a plugin]
+- [usercommands.md, Adding user commands]
 theme: readthedocs
