@@ -1,7 +1,7 @@
 site_name: QGIS Command Bar
 pages:
-- [index.md, Home]
-- [api.md, API]
-- [usercommands.md, Adding user commands]
-- [plugin_commands.md, Adding Commands from a plugin]
+- ['index.md', 'About', 'Home']
+- ['api.md', 'API', 'API']
+- ['usercommands.md', 'API', 'Adding user commands']
+- ['plugin_commands.md', 'API', 'Adding Commands from a plugin']
 theme: readthedocs
