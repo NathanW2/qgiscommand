@@ -1,4 +1,4 @@
-Defining New command
+Defining user commands
 -------------------------------------------------------------------------------
 
 New commands can be defined in Python files which are loaded from `.qgis2\python\commandbar`. The `commandbar` folder is created when the plugin first loads.

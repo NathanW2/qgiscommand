@@ -1,4 +1,5 @@
-# Adding commands from a plugin
+Defining commands in plugins
+-------------------------------------------------------------------------------
 
 A plugin can register custom commands by using the following code in the plugin:
 
