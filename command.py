@@ -111,9 +111,14 @@ def completions_for_line(line):
     args, _, _, _ = inspect.getargspec(func)
     index = len(data) - 1
 
+    if index == -1:
+        index = 0
+
     endofline = line.endswith(" ")
     if endofline:
         index += 1
+    else:
+        index -= 1
 
     try:
         argname = args[index]
@@ -278,14 +283,14 @@ def exists(path):
 @check(filename=(not_empty, exists))
 def load_from_file(filename):
     with open(filename, "r") as f:
-        lines = f.readlines()
+        data = f.read()
 
-    for line in lines:
-        line = line.strip()
-        if line.startswith("#") or not line:
-            # Comment line
-            continue
-        funcname, func, data = parse_line(line)
+    data = data.replace("\n\r", " ").replace("\n", " ")
+    import re
+
+    commands = re.findall("\(([^)]+)\)", data)
+    for match in commands:
+        funcname, func, data = parse_line(match)
         try:
             func(*data)
         except KeyError:

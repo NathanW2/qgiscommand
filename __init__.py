@@ -30,14 +30,14 @@ def load_init_file():
     # Read the init file from the python\commandbar folder
     folder = os.path.join(QgsApplication.qgisSettingsDirPath(), "python",
                           "commandbar")
-    initfile = os.path.join(folder, "init")
+    initfile = os.path.join(folder, "init.qgsc")
     try:
         os.makedirs(folder)
     except OSError:
         pass
 
     if not os.path.exists(initfile):
-        header = "# Command bar init file. Lines starting with # are ignored"
+        header = ";; Command bar init file. Commands inside ( ) e.g (point-at x y)"
         with open(initfile, "w") as f:
             f.write(header)
     command.load_from_file(initfile)
