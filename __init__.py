@@ -26,6 +26,18 @@ def classFactory(iface):
     return CommandBar(iface)
 
 
+def load_packages():
+    # Load all the Python modules found in the users command bar folder
+    folder = os.path.join(QgsApplication.qgisSettingsDirPath(), "python",
+                          "commandbar")
+    try:
+        os.makedirs(folder)
+    except OSError:
+        pass
+
+    command.load_packages([folder])
+
+
 def load_init_file():
     # Read the init file from the python\commandbar folder
     folder = os.path.join(QgsApplication.qgisSettingsDirPath(), "python",
@@ -48,11 +60,17 @@ def reload_init_file():
     load_init_file()
 
 
+@command.command()
+def reload_packages():
+    load_packages()
+
+
 class CommandBar:
     def __init__(self, iface):
         self.iface = iface
 
     def initGui(self):
+        self.iface.initializationCompleted.connect(load_packages)
         self.iface.initializationCompleted.connect(load_init_file)
         self.shell = qgiscommand.CommandShell(self.iface.mapCanvas())
         self.shell.hide()

@@ -279,6 +279,15 @@ def exists(path):
         return False, "File does not exist"
 
 
+def load_packages(paths):
+    import os
+    import imp
+    for path in paths:
+        for module in os.listdir(path):
+            if module == '__init__.py' or module[-3:] != '.py':
+                continue
+            imp.load_source(module[:-3], os.path.join(path, module))
+
 @command("File name")
 @check(filename=(not_empty, exists))
 def load_from_file(filename):
