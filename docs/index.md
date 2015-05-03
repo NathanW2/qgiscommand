@@ -4,6 +4,8 @@ A simple to use interactive command bar for QGIS. Commands are defined in Python
 
 All functions are interactive and if not all arguments are given will prompt for each one as required.
 
+![Demo](images/commandbar.gif)
+
 Download the plugin from the QGIS plugin repo or from [http://plugins.qgis.org/plugins/qgiscommand/](here)
 
 Inspiration for the command bar was drawn from AutoCAD and Emacs, so you might
