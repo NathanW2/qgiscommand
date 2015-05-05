@@ -48,7 +48,7 @@ def help():
     # TODO Replace this with a html page for help
     helptext = """Command Bar help
 
-To get help on a command type: command-help 
+To get help on a command type: command-help
 Current commands:
 {commands}
     """.format(commands="\n".join(command.commands.keys()))
@@ -144,22 +144,17 @@ class CommandShell(QsciScintilla):
         self.setLexers()
 
     def adjust_auto_complete(self):
-        self.autocompleteview.resize(self.parent().width(), 100)
+        self.autocompleteview.resize(self.parent().width(), 150)
         self.autocompleteview.move(0, self.parent().height() - self.height() -
-                                   self.autocompleteview.height())
+                                   self.autocompleteview.height() + 2)
 
     def add_completions(self, completions):
         self.autocompletemodel.clear()
         for value in completions:
             data = u"{}".format(unicode(value))
             self.autocompletemodel.appendRow(QStandardItem(data))
-        self._lastcompletions = completions
 
-    def text_changed(self):
-        completions, userdata = command.completions_for_line(self.get_data())
-        if not completions == self._lastcompletions:
-            self.add_completions(completions)
-
+    def filter_autocomplete(self, userdata, filteronly=False):
         fuzzy = "".join(["{}.*".format(c) for c in userdata])
         self.autocompletefilter.setFilterRegExp(fuzzy)
         index = self.autocompletefilter.index(0, 0)
@@ -173,6 +168,13 @@ class CommandShell(QsciScintilla):
 
         self.adjust_auto_complete()
         self.autocompleteview.setVisible(hasdata)
+
+    def text_changed(self):
+        userdata = self.get_data()
+        if not self.currentfunction:
+            completions, userdata = command.completions_for_line(self.get_data())
+            self.add_completions(completions)
+        self.filter_autocomplete(userdata)
 
     def end(self):
         self.parent().removeEventFilter(self)
@@ -310,8 +312,9 @@ class CommandShell(QsciScintilla):
                 return
 
         try:
-            prompt, data = self.currentfunction.send(line)
+            prompt, data, completions = self.currentfunction.send(line)
             self.show_prompt(prompt, data)
+            self.add_completions(completions)
         except StopIteration:
             self.currentfunction = None
             self.show_prompt()

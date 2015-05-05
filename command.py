@@ -225,12 +225,14 @@ def parse_line_data(line, record=True):
 
     _validators = validators_for_function(funcname)
 
+    # HACK! This is ugly as all hell and needs to be done better
+    
     # If the full input line is not valid we have to wait here until it is done
     valid, reason = line_valid(line, _validators, needed, argdata)
     while not valid:
         prompt = "{}.".format(reason)
         data = "{} {}".format(funcname, " ".join(argdata))
-        line = yield prompt, data
+        line = yield prompt, data, []
         funcname, func, argdata = parse_line(line)
         valid, reason = line_valid(line, _validators, needed, argdata)
 
@@ -241,12 +243,14 @@ def parse_line_data(line, record=True):
         prompts = prompts[wehavecount:]
         for argindex, prompt in enumerate(prompts, start=wehavecount):
             _line = "({}) {}".format(funcname, prompt)
-            data = yield _line, None
             argname = needed[argindex]
+            data = yield _line, None, completions_for_arg(funcname, argname, None)
+            data = data.strip()
             valid, reason = data_valid(data, argname, _validators)
             while not valid:
                 _line = "({}) {}. {}".format(funcname, reason, prompt)
-                data = yield _line, data
+                data = yield _line, data, completions_for_arg(funcname, argname, data)
+                data = data.strip()
                 valid, reason = data_valid(data, argname, _validators)
 
             argdata.append(data)

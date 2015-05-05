@@ -66,4 +66,5 @@ def plugin_install(name):
 def plugin_uninstall(name):
     print name
     installer = plugin_installer.pluginInstaller
+    pluginid = plugin_name_map()[name]
     installer.uninstallPlugin(pluginid, quiet=True)
