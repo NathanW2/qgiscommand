@@ -109,8 +109,8 @@ class Lexer(QsciLexerCustom):
 class CommandShell(QsciScintilla):
     def __init__(self, parent=None):
         super(CommandShell, self).__init__(parent)
-        self.setMinimumHeight(50)
-        self.setMaximumHeight(50)
+        # self.setMinimumHeight(50)
+        # self.setMaximumHeight(50)
         self.settings = QSettings()
         self.lex = QsciLexerPython(self)
         self.apis = QsciAPIs(self.lex)
@@ -346,8 +346,9 @@ class CommandShell(QsciScintilla):
 
     def adjust_size(self):
         fm = QFontMetrics(self.font())
-        self.setMaximumHeight(20)
-        self.resize(self.parent().width(), 20)
+        height = fm.height() + 10
+        self.setMaximumHeight(height)
+        self.resize(self.parent().width(), height)
         self.move(0, self.parent().height() - self.height())
         self.adjust_auto_complete()
 
