@@ -36,6 +36,12 @@ def complete_projects(argname, data):
         projects += [os.path.basename(f) for f in glob.glob(path + "/*.qgs")]
     return projects
 
+@command.command("Name")
+def new_group(name):
+    tree = iface.layerTreeView()
+    current = tree.currentGroupNode()
+    current.addGroup(name)
+
 
 @command.command("Name")
 @command.complete_with(name=complete_projects)
@@ -44,7 +50,7 @@ def load_project(name):
     Load a project from the set project paths
     """
     _name = name
-    name += ".qgs"
+    ## name += ".qgs"
     for path in project_paths:
         for root, dirs, files in os.walk(path):
             if name in files:

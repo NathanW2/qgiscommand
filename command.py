@@ -226,7 +226,7 @@ def parse_line_data(line, record=True):
     _validators = validators_for_function(funcname)
 
     # HACK! This is ugly as all hell and needs to be done better
-    
+
     # If the full input line is not valid we have to wait here until it is done
     valid, reason = line_valid(line, _validators, needed, argdata)
     while not valid:
@@ -244,12 +244,14 @@ def parse_line_data(line, record=True):
         for argindex, prompt in enumerate(prompts, start=wehavecount):
             _line = "({}) {}".format(funcname, prompt)
             argname = needed[argindex]
-            data = yield _line, None, completions_for_arg(funcname, argname, None)
+            data = yield _line, None, completions_for_arg(funcname, argname,
+                                                          None)
             data = data.strip()
             valid, reason = data_valid(data, argname, _validators)
             while not valid:
                 _line = "({}) {}. {}".format(funcname, reason, prompt)
-                data = yield _line, data, completions_for_arg(funcname, argname, data)
+                data = yield _line, data, completions_for_arg(funcname,
+                                                              argname, data)
                 data = data.strip()
                 valid, reason = data_valid(data, argname, _validators)
 
@@ -292,17 +294,27 @@ def load_packages(paths):
                 continue
             imp.load_source(module[:-3], os.path.join(path, module))
 
+
 @command("File name")
 @check(filename=(not_empty, exists))
 def load_from_file(filename):
+    data = []
     with open(filename, "r") as f:
-        data = f.read()
+        for line in f:
+            if line.startswith(';;'):
+                continue
+            else:
+                data.append(line)
 
-    data = data.replace("\n\r", " ").replace("\n", " ")
     import re
+    data = ' '.join(data)
 
     commands = re.findall("\(([^)]+)\)", data)
     for match in commands:
+        line = match.strip()
+        if not line:
+            continue
+
         funcname, func, data = parse_line(match)
         try:
             func(*data)
@@ -310,7 +322,7 @@ def load_from_file(filename):
             continue
 
 
-@command("Alias", "Function Name", "Args")
+@command("Alias", "Function Name")
 @check(name=is_comamnd, alias=not_empty)
 @complete_with(name=commandlist)
 def alias(alias, name, *args):
