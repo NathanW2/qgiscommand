@@ -106,8 +106,10 @@ class CommandShell(QsciScintilla):
         self.autocompletefilter = QSortFilterProxyModel()
         self.autocompletefilter.setSourceModel(self.autocompletemodel)
         self.autocompleteview = QListView(self.parent())
-        self.autocompleteview.setStyleSheet(
-            "QListView:item:selected { background: #111513 }")
+        self.autocompleteview.setStyleSheet("""
+            QListView:item:selected { color: #111513; background: white }
+            QListView:item { color: white }
+            QListView {background-color: #111513 }""")
         self.autocompleteview.setModel(self.autocompletefilter)
         self.autocompleteview.hide()
         self.selectionmodel = self.autocompleteview.selectionModel()
