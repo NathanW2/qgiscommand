@@ -91,7 +91,7 @@ class CommandBar:
 
     def unload(self):
         self.iface.initializationCompleted.disconnect(load_init_file)
-        self.shell.end()
+        self.shell.finsihed()
         self.iface.removeToolBarIcon(self.action)
         del self.action
 

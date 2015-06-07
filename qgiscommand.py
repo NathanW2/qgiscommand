@@ -9,7 +9,7 @@ import command
 import qgis_commands
 import layer_commands
 
-_start_prompt = "-> "
+_start_prompt = "> "
 
 import logger
 
@@ -142,7 +142,7 @@ class CommandShell(QLineEdit):
             self.add_completions(completions)
         self.filter_autocomplete(userdata)
 
-    def end(self):
+    def finsihed(self):
         self.parent().removeEventFilter(self)
         self.close()
 
@@ -246,8 +246,7 @@ class CommandShell(QLineEdit):
 
     def move_cursor_to_end(self):
         """Move cursor to end of text"""
-        index = self.get_end_pos()
-        self.setCursorPosition(index)
+        self.end(False)
 
     def get_data(self):
         line = self.text()
