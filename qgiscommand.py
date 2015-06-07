@@ -82,23 +82,16 @@ def view_source(name):
     show_viewer(source, lineno, filename)
 
 
-class CommandShell(QsciScintilla):
+class CommandShell(QLineEdit):
     def __init__(self, parent=None):
         super(CommandShell, self).__init__(parent)
         self.settings = QSettings()
         self.lex = QsciLexerPython(self)
         self.apis = QsciAPIs(self.lex)
         self.lex.setAPIs(self.apis)
-        self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
-        self.SendScintilla(QsciScintilla.SCI_SETVSCROLLBAR, 0)
-        self.setFolding(0)
         self._start_prompt = _start_prompt
         self.prompt = self._start_prompt
         self.currentfunction = None
-        self.setAutoCompletionSource(self.AcsAPIs)
-        self.setAutoCompletionThreshold(1)
-        self.setAutoCompletionReplaceWord(True)
-        self.setCallTipsStyle(QsciScintilla.CallTipsNoContext)
         self.parent().installEventFilter(self)
         self.textChanged.connect(self.text_changed)
         self._lastcompletions = None
@@ -112,14 +105,14 @@ class CommandShell(QsciScintilla):
             QListView {background-color: #111513 }""")
         self.autocompleteview.setModel(self.autocompletefilter)
         self.autocompleteview.hide()
+        self.setStyleSheet("QLineEdit { background: #111513; color: white }")
         self.selectionmodel = self.autocompleteview.selectionModel()
         self.autocompleteview.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.setLexers()
 
     def adjust_auto_complete(self):
         self.autocompleteview.resize(self.parent().width(), 150)
         self.autocompleteview.move(0, self.parent().height() - self.height() -
-                                   self.autocompleteview.height() + 2)
+                                   self.autocompleteview.height())
 
     def add_completions(self, completions):
         self.autocompletemodel.clear()
@@ -179,29 +172,36 @@ class CommandShell(QsciScintilla):
             self.autocompleteview.scrollTo(index,
                                            QAbstractItemView.EnsureVisible)
 
+    def event(self, event):
+        if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Tab:
+            self.complete()
+            return True
+
+        return super(CommandShell, self).event(event)
+                
     def keyPressEvent(self, e):
         if e.key() in (Qt.Key_Return, Qt.Key_Enter):
-            self.entered()
+            if not self.complete():
+                self.entered()
         elif e.key() == Qt.Key_Escape:
             self.close()
-        elif e.key() == Qt.Key_Tab:
-            self.complete()
         elif e.key() in (Qt.Key_Backspace, Qt.Key_Delete):
-            _, newindex = self.getCursorPosition()
+            newindex = self.cursorPosition()
             if newindex > len(self.prompt):
-                QsciScintilla.keyPressEvent(self, e)
+                super(CommandShell, self).keyPressEvent(e)
         elif e.key() == Qt.Key_Up:
             self.move_autocomplete(-1)
         elif e.key() == Qt.Key_Down:
             self.move_autocomplete(1)
         else:
-            QsciScintilla.keyPressEvent(self, e)
+            super(CommandShell, self).keyPressEvent(e)
 
     def complete(self):
+        print "Complete"
         try:
             index = self.autocompleteview.selectedIndexes()[0]
         except IndexError:
-            return
+            return False
 
         if index.isValid():
             text = self.autocompletefilter.data(index)
@@ -213,6 +213,7 @@ class CommandShell(QsciScintilla):
             space = line.rfind(' ')
             newline = line[:space + 1] + text + " "
             self.show_prompt(self.prompt, newline)
+            return True
 
     def close(self):
         if self.currentfunction:
@@ -241,15 +242,12 @@ class CommandShell(QsciScintilla):
 
     def get_end_pos(self):
         """Return (line, index) position of the last character"""
-        line = self.lines() - 1
-        return (line, len(self.text(line)))
+        return len(self.text())
 
     def move_cursor_to_end(self):
         """Move cursor to end of text"""
-        line, index = self.get_end_pos()
-        self.setCursorPosition(line, index)
-        self.ensureCursorVisible()
-        self.ensureLineVisible(line)
+        index = self.get_end_pos()
+        self.setCursorPosition(index)
 
     def get_data(self):
         line = self.text()
@@ -298,7 +296,7 @@ class CommandShell(QsciScintilla):
         line = self.get_data()
         self.run_line(line)
 
-    def setLexers(self):
+    def set_settings(self):
         loadFont = self.settings.value("pythonConsole/fontfamilytext",
                                        "Monospace")
         fontSize = self.settings.value("pythonConsole/fontsize", 10, type=int)
@@ -311,9 +309,7 @@ class CommandShell(QsciScintilla):
         font.setLetterSpacing(QFont.PercentageSpacing, 87.0)
         font.setBold(False)
 
-        self.lex.setFont(font)
-        self.lex.setDefaultFont(font)
-        self.setLexer(self.lex)
+        self.setFont(font)
 
     def adjust_size(self):
         fm = QFontMetrics(self.font())
