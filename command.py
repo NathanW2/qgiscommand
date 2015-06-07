@@ -16,6 +16,8 @@ nohistory = []
 
 command_split = re.compile(r"[^'\s]\S*|'.+?'")
 
+recentcommands = []
+
 
 def commandlist(argname, userdata):
     return commands.keys()
@@ -99,14 +101,18 @@ def completions_for_arg(funcname, argname, userdata):
         return []
 
 
+def command_list():
+    return recentcommands + commands.keys()
+            
+
 def completions_for_line(line):
     if line.strip() == "":
-        return commands.keys(), ""
+        return command_list(), ""
 
     try:
         funcname, func, data = parse_line(line)
     except NoFunction as er:
-        return commands.keys(), er.funcname
+        return command_list(), er.funcname
 
     args, _, _, _ = inspect.getargspec(func)
     index = len(data) - 1
@@ -175,6 +181,22 @@ def split_line(line):
     return data
 
 
+def add_to_recent(commandname):
+    # Remove it if it's already in the list
+    try:
+        index = recentcommands.index(commandname)
+        del recentcommands[index]
+    except ValueError:
+        pass
+
+    recentcommands.insert(0, commandname)
+
+    # Drop off the bottom if there is more then
+    # 5 commands
+    if recentcommands == 5:
+        recentcommands.pop()
+        
+
 def parse_line(line):
     """
     Parse the line and return the name of the called function, the Python function, and the data
@@ -217,6 +239,7 @@ def parse_line_data(line, record=True):
     if not needed and not varargs:
         if record and funcname not in nohistory:
             history.append(funcname)
+        add_to_recent(funcname)
         func()
         return
 
@@ -260,6 +283,8 @@ def parse_line_data(line, record=True):
     if record and funcname not in nohistory:
         line = "{} {}".format(funcname, " ".join(argdata))
         history.append(line)
+
+    add_to_recent(funcname)
     func(*argdata)
 
 
