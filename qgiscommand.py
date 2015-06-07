@@ -85,8 +85,6 @@ def view_source(name):
 class CommandShell(QsciScintilla):
     def __init__(self, parent=None):
         super(CommandShell, self).__init__(parent)
-        # self.setMinimumHeight(50)
-        # self.setMaximumHeight(50)
         self.settings = QSettings()
         self.lex = QsciLexerPython(self)
         self.apis = QsciAPIs(self.lex)
@@ -109,14 +107,11 @@ class CommandShell(QsciScintilla):
         self.autocompletefilter.setSourceModel(self.autocompletemodel)
         self.autocompleteview = QListView(self.parent())
         self.autocompleteview.setStyleSheet(
-            "QListView::item:selected {border: 1px solid black; }")
+            "QListView:item:selected { background: #111513 }")
         self.autocompleteview.setModel(self.autocompletefilter)
         self.autocompleteview.hide()
         self.selectionmodel = self.autocompleteview.selectionModel()
         self.autocompleteview.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        # command.register_command(self.run_last_command,
-        #                          alias="!!",
-        #                          nohistory=True)
         self.setLexers()
 
     def adjust_auto_complete(self):
@@ -317,8 +312,6 @@ class CommandShell(QsciScintilla):
         self.lex.setFont(font)
         self.lex.setDefaultFont(font)
         self.setLexer(self.lex)
-
-        self.autocompleteview.setFont(font)
 
     def adjust_size(self):
         fm = QFontMetrics(self.font())
