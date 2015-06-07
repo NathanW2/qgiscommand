@@ -82,31 +82,6 @@ def view_source(name):
     show_viewer(source, lineno, filename)
 
 
-class Lexer(QsciLexerCustom):
-    """
-    Note: Crashes at the momemnt
-    """
-
-    def __init__(self, parent=None):
-        QsciLexerCustom.__init__(self, parent)
-        self._styles = {0: 'Default', 1: 'Function', }
-        for key, value in self._styles.iteritems():
-            setattr(self, value, key)
-
-    def description(self, style):
-        return self._styles.get(style, 'Default')
-
-    def defaultColor(self, style):
-        if style == self.Default:
-            return QColor('#000000')
-        elif style == self.Function:
-            return QColor('#C0C0C0')
-        return QsciLexerCustom.defaultColor(self, style)
-
-    def styleText(self, start, end):
-        print start, end
-
-
 class CommandShell(QsciScintilla):
     def __init__(self, parent=None):
         super(CommandShell, self).__init__(parent)
