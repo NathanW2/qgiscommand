@@ -72,8 +72,11 @@ class CommandBar:
     def initGui(self):
         self.iface.initializationCompleted.connect(load_packages)
         self.iface.initializationCompleted.connect(load_init_file)
-        self.shell = qgiscommand.CommandShell(self.iface.mapCanvas())
-        self.shell.hide()
+        self.toolbar = self.iface.addToolBar("Command Bar")
+        self.toolbar.setAllowedAreas(Qt.BottomToolBarArea)
+        self.toolbar.setFloatable(False)
+
+        self.shell = qgiscommand.CommandShell(self.toolbar)
 
         self.short = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Semicolon),
                                self.iface.mainWindow())
@@ -89,6 +92,8 @@ class CommandBar:
         self.action.triggered.connect(self.run)
         self.iface.addToolBarIcon(self.action)
 
+        self.toolbar.addWidget(self.shell)
+
     def unload(self):
         self.iface.initializationCompleted.disconnect(load_init_file)
         self.shell.finsihed()
@@ -96,4 +101,6 @@ class CommandBar:
         del self.action
 
     def run(self):
-        self.shell.show()
+        if not self.toolbar.isVisible():
+            self.shell.setFocus()
+            self.shell.show_completion()
