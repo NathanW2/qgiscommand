@@ -100,16 +100,16 @@ class CommandShell(QLineEdit):
         self.autocompletefilter.setSourceModel(self.autocompletemodel)
         self.autocompleteview = QListView(self.parent())
         self.autocompleteview.setStyleSheet("""
-            QListView:item:selected { color: #111513; background: white }
+            QListView:item:selected { color: #36454f; background: #7abd14 }
             QListView:item { color: white }
-            QListView {background-color: #111513 }""")
+            QListView {background-color: #36454f }""")
         self.autocompleteview.setModel(self.autocompletefilter)
         self.autocompleteview.setWindowFlags(Qt.Popup)
         self.autocompleteview.setFocusPolicy(Qt.NoFocus)
         self.autocompleteview.setFocusProxy(self)
         self.autocompleteview.setMouseTracking(True)
         self.autocompleteview.hide()
-        self.setStyleSheet("QLineEdit { background: #111513; color: white }")
+        self.setStyleSheet("QLineEdit { background: #36454f; color: #7abd14  }")
         self.selectionmodel = self.autocompleteview.selectionModel()
         self.autocompleteview.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.autocompleteview.installEventFilter(self)
@@ -136,7 +136,6 @@ class CommandShell(QLineEdit):
         return False
 
     def show_completion(self):
-        self.autocompleteview.setVisible(False)
         hasdata = self.autocompletemodel.rowCount() > 0
         self.autocompleteview.adjustSize()
         self.autocompleteview.resize(self.width(), 150)
