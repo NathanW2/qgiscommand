@@ -103,7 +103,7 @@ def completions_for_arg(funcname, argname, userdata):
 
 def command_list():
     return recentcommands + commands.keys()
-            
+
 
 def completions_for_line(line):
     if line.strip() == "":
@@ -195,7 +195,7 @@ def add_to_recent(commandname):
     # 5 commands
     if recentcommands == 5:
         recentcommands.pop()
-        
+
 
 def parse_line(line):
     """
