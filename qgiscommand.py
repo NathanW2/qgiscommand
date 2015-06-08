@@ -82,6 +82,7 @@ def view_source(name):
     show_viewer(source, lineno, filename)
 
 
+
 class CommandShell(QLineEdit):
     def __init__(self, parent=None):
         super(CommandShell, self).__init__(parent)
@@ -104,15 +105,46 @@ class CommandShell(QLineEdit):
             QListView:item { color: white }
             QListView {background-color: #111513 }""")
         self.autocompleteview.setModel(self.autocompletefilter)
+        self.autocompleteview.setWindowFlags(Qt.Popup)
+        self.autocompleteview.setFocusPolicy(Qt.NoFocus)
+        self.autocompleteview.setFocusProxy(self)
+        self.autocompleteview.setMouseTracking(True)
         self.autocompleteview.hide()
         self.setStyleSheet("QLineEdit { background: #111513; color: white }")
         self.selectionmodel = self.autocompleteview.selectionModel()
         self.autocompleteview.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.autocompleteview.installEventFilter(self)
+        self.show_prompt()
 
-    def adjust_auto_complete(self):
-        self.autocompleteview.resize(self.parent().width(), 150)
-        self.autocompleteview.move(0, self.parent().height() - self.height() -
-                                   self.autocompleteview.height())
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.MouseButtonPress:
+            self.autocompleteview.hide()
+            self.setFocus()
+            return True
+
+        if event.type() == QEvent.KeyPress:
+            if event.key() in [Qt.Key_Tab, Qt.Key_Enter, Qt.Key_Return]:
+                self.complete()
+                self.autocompleteview.hide()
+                self.setFocus()
+                self.event(event)
+                return True
+            if event.key() in [Qt.Key_Up, Qt.Key_Down]:
+                return False
+            else:
+                self.setFocus()
+                self.event(event)
+
+        return False
+
+    def show_completion(self):
+        hasdata = self.autocompletemodel.rowCount() > 0
+        print self.autocompletemodel.rowCount()
+        self.autocompleteview.adjustSize()
+        self.autocompleteview.resize(self.width(), 150)
+        self.autocompleteview.move(self.mapToGlobal(QPoint(0, self.height())))
+        self.autocompleteview.setFocus()
+        self.autocompleteview.setVisible(hasdata)
 
     def add_completions(self, completions):
         self.autocompletemodel.clear()
@@ -130,10 +162,7 @@ class CommandShell(QLineEdit):
             self.autocompleteview.scrollTo(index,
                                            QAbstractItemView.EnsureVisible)
 
-        hasdata = self.autocompletemodel.rowCount() > 0
-
-        self.adjust_auto_complete()
-        self.autocompleteview.setVisible(hasdata)
+            self.show_completion()
 
     def text_changed(self):
         userdata = self.get_data()
@@ -146,32 +175,6 @@ class CommandShell(QLineEdit):
         self.parent().removeEventFilter(self)
         self.close()
 
-    def eventFilter(self, object, event):
-        if event.type() == QEvent.Resize:
-            self.adjust_size()
-        return QWidget.eventFilter(self, object, event)
-
-    def move_autocomplete(self, amount):
-        try:
-            index = self.autocompleteview.selectedIndexes()[0]
-        except IndexError:
-            return
-
-        row = index.row()
-        row += amount
-        if row > self.autocompletefilter.rowCount() - 1:
-            # Wrap to top
-            row = 0
-        elif row < 0:
-            # Wrap to bottom
-            row = self.autocompletefilter.rowCount() - 1
-
-        index = self.autocompletefilter.index(row, 0)
-        if index.isValid():
-            self.selectionmodel.select(index, QItemSelectionModel.SelectCurrent)
-            self.autocompleteview.scrollTo(index,
-                                           QAbstractItemView.EnsureVisible)
-
     def event(self, event):
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Tab:
             self.complete()
@@ -181,23 +184,17 @@ class CommandShell(QLineEdit):
                 
     def keyPressEvent(self, e):
         if e.key() in (Qt.Key_Return, Qt.Key_Enter):
-            if not self.complete():
-                self.entered()
+            self.entered()
         elif e.key() == Qt.Key_Escape:
             self.close()
         elif e.key() in (Qt.Key_Backspace, Qt.Key_Delete):
             newindex = self.cursorPosition()
             if newindex > len(self.prompt):
                 super(CommandShell, self).keyPressEvent(e)
-        elif e.key() == Qt.Key_Up:
-            self.move_autocomplete(-1)
-        elif e.key() == Qt.Key_Down:
-            self.move_autocomplete(1)
         else:
             super(CommandShell, self).keyPressEvent(e)
 
     def complete(self):
-        print "Complete"
         try:
             index = self.autocompleteview.selectedIndexes()[0]
         except IndexError:
@@ -253,15 +250,6 @@ class CommandShell(QLineEdit):
         line = line[len(self.prompt):]
         return line
 
-    def run_last_command(self):
-        """
-        Runs the last command again. (Alias -> !!)
-        """
-        try:
-            line = command.history[-1]
-            self.run_line(line)
-        except IndexError:
-            pass
 
     def run_line(self, line):
         if not line:
@@ -309,20 +297,6 @@ class CommandShell(QLineEdit):
         font.setBold(False)
 
         self.setFont(font)
-
-    def adjust_size(self):
-        fm = QFontMetrics(self.font())
-        height = fm.height() + 10
-        self.setMaximumHeight(height)
-        self.resize(self.parent().width(), height)
-        self.move(0, self.parent().height() - self.height())
-        self.adjust_auto_complete()
-
-    def showEvent(self, event):
-        self.adjust_size()
-        self.show_prompt()
-        self.setFocus()
-        self.autocompleteview.show()
 
     def activated(self):
         visible = self.isVisible()
