@@ -116,6 +116,10 @@ class CommandShell(QLineEdit):
         self.show_prompt()
 
     def eventFilter(self, obj, event):
+        # WAT!? If this isn't here then the plugin crashes on unload
+        if not QEvent:
+            return False
+            
         if event.type() == QEvent.MouseButtonPress:
             self.autocompleteview.hide()
             self.setFocus()
@@ -172,6 +176,9 @@ class CommandShell(QLineEdit):
         self.parent().removeEventFilter(self)
 
     def event(self, event):
+        if not QEvent:
+            return False
+            
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Tab:
             self.complete()
             return True
