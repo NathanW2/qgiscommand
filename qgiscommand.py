@@ -126,7 +126,6 @@ class CommandShell(QLineEdit):
                 self.complete()
                 self.autocompleteview.hide()
                 self.setFocus()
-                self.event(event)
                 return True
             if event.key() in [Qt.Key_Up, Qt.Key_Down]:
                 return False
@@ -172,7 +171,6 @@ class CommandShell(QLineEdit):
 
     def finsihed(self):
         self.parent().removeEventFilter(self)
-        self.close()
 
     def event(self, event):
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Tab:
@@ -185,7 +183,7 @@ class CommandShell(QLineEdit):
         if e.key() in (Qt.Key_Return, Qt.Key_Enter):
             self.entered()
         elif e.key() == Qt.Key_Escape:
-            self.close()
+            self.end_current()
         elif e.key() in (Qt.Key_Backspace, Qt.Key_Delete):
             newindex = self.cursorPosition()
             if newindex > len(self.prompt):
@@ -211,16 +209,9 @@ class CommandShell(QLineEdit):
             self.show_prompt(self.prompt, newline)
             return True
 
-    def close(self):
-        if self.currentfunction:
-            # If there is a current function we don't kill the bar just the
-            # current function
-            self.currentfunction = None
-            self.show_prompt()
-            return
+    def end_current(self):
         self.currentfunction = None
-        self.autocompleteview.close()
-        super(CommandShell, self).close()
+        self.show_prompt()
 
     def show_prompt(self, prompt=_start_prompt, data=None):
         self.clear()

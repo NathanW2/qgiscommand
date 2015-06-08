@@ -102,5 +102,7 @@ class CommandBar:
 
     def run(self):
         if not self.toolbar.isVisible():
-            self.shell.setFocus()
-            self.shell.show_completion()
+            self.toolbar.show()
+
+        self.shell.setFocus()
+        self.shell.show_completion()
