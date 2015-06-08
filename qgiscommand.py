@@ -8,6 +8,7 @@ from PyQt4.Qsci import QsciScintilla, QsciLexerCustom, QsciAPIs, QsciLexerPython
 import command
 import qgis_commands
 import layer_commands
+import package_commands
 
 _start_prompt = "> "
 

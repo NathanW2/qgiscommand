@@ -1,12 +1,18 @@
 [general]
 name=Command Bar
 description=A command bar interface for QGIS. Handy for quick data entry, or not using you mouse.  New commands can be created using Python.
-version=0.20
+version=0.22
 qgisMinimumVersion=2.4
 author=Nathan Woodrow
 email=woodrow.nathan@gmail.com
 icon=icon.png
 changelog=
+        0.22
+        Add edit-package, define-package commands
+        0.21
+        Green for line text and current selection
+        Fix crash on exit
+        0.20
         Black background, white text
         Recent commands at top
         Enter auto complete command
