@@ -93,7 +93,6 @@ class CommandShell(QLineEdit):
         self._start_prompt = _start_prompt
         self.prompt = self._start_prompt
         self.currentfunction = None
-        self.parent().installEventFilter(self)
         self.textChanged.connect(self.text_changed)
         self._lastcompletions = None
         self.autocompletemodel = QStandardItemModel()
@@ -138,11 +137,11 @@ class CommandShell(QLineEdit):
         return False
 
     def show_completion(self):
+        self.autocompleteview.setVisible(False)
         hasdata = self.autocompletemodel.rowCount() > 0
-        print self.autocompletemodel.rowCount()
         self.autocompleteview.adjustSize()
         self.autocompleteview.resize(self.width(), 150)
-        self.autocompleteview.move(self.mapToGlobal(QPoint(0, self.height())))
+        self.autocompleteview.move(self.mapToGlobal(QPoint(0, 0 - self.autocompleteview.height())))
         self.autocompleteview.setFocus()
         self.autocompleteview.setVisible(hasdata)
 
