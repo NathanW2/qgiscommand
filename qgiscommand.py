@@ -110,7 +110,7 @@ class CommandShell(QLineEdit):
         self.autocompleteview.setFocusProxy(self)
         self.autocompleteview.setMouseTracking(True)
         self.autocompleteview.hide()
-        self.setStyleSheet("QLineEdit { background: #36454f; color: #7abd14  }")
+        self.setStyleSheet("QLineEdit { border: none; background: #36454f; color: #7abd14  }")
         self.selectionmodel = self.autocompleteview.selectionModel()
         self.autocompleteview.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.autocompleteview.installEventFilter(self)
