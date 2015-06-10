@@ -85,8 +85,9 @@ def view_source(name):
 
 
 class CommandShell(QLineEdit):
-    def __init__(self, parent=None):
+    def __init__(self, mainwindow, parent=None):
         super(CommandShell, self).__init__(parent)
+        self.mainwindow = mainwindow
         self.settings = QSettings()
         self.lex = QsciLexerPython(self)
         self.apis = QsciAPIs(self.lex)
@@ -120,7 +121,7 @@ class CommandShell(QLineEdit):
         # WAT!? If this isn't here then the plugin crashes on unload
         if not QEvent:
             return False
-            
+
         if event.type() == QEvent.MouseButtonPress:
             self.autocompleteview.hide()
             self.setFocus()
@@ -143,8 +144,15 @@ class CommandShell(QLineEdit):
     def show_completion(self):
         hasdata = self.autocompletemodel.rowCount() > 0
         self.autocompleteview.adjustSize()
-        self.autocompleteview.resize(self.width(), 150)
+        size = self.mainwindow.height() / 100 * 15
+        rowsize = self.autocompleteview.sizeHintForRow(0)
+        newheight = self.autocompletefilter.rowCount() * rowsize
+        if newheight < size:
+            size = newheight + rowsize
+        self.autocompleteview.setUpdatesEnabled(False)
+        self.autocompleteview.resize(self.width(), size)
         self.autocompleteview.move(self.mapToGlobal(QPoint(0, 0 - self.autocompleteview.height())))
+        self.autocompleteview.setUpdatesEnabled(True)
         self.autocompleteview.setFocus()
         self.autocompleteview.setVisible(hasdata)
 

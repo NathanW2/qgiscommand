@@ -79,7 +79,7 @@ class CommandBar:
 
         self.iface.mainWindow().addToolBar(Qt.BottomToolBarArea, self.toolbar)
 
-        self.shell = qgiscommand.CommandShell(self.toolbar)
+        self.shell = qgiscommand.CommandShell(self.iface.mainWindow(), self.toolbar)
         self.toolbar.addWidget(self.shell)
 
         self.short = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Semicolon),
