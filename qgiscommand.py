@@ -86,6 +86,8 @@ def view_source(name):
 class CompletionModel(QStandardItemModel):
     def __init__(self, items=None, parent=None):
         super(CompletionModel, self).__init__(parent)
+        self.filtermodel = QSortFilterProxyModel()
+        self.filtermodel.setSourceModel(self)
          
         if not items:
             items = []
@@ -106,6 +108,25 @@ class CompletionModel(QStandardItemModel):
 
             self.add_entry(data, helptext)
 
+    def set_filter(self, userdata):
+        fuzzy = "".join(["{}.*".format(c) for c in userdata])
+        self.filtermodel.setFilterRegExp(fuzzy)
+        index = self.filtermodel.index(0, 0)
+        return index
+
+    @property
+    def filtered_item_count(self):
+        return self.filtermodel.rowCount()
+
+    def filtered_item_data(self, index):
+        if index.isValid():
+            return self.filtermodel.data(index)
+        else:
+            return None
+            
+            
+                
+
 
 
 class CommandShell(QLineEdit):
@@ -122,14 +143,12 @@ class CommandShell(QLineEdit):
         self.textChanged.connect(self.text_changed)
         self._lastcompletions = None
         self.autocompletemodel = CompletionModel()
-        self.autocompletefilter = QSortFilterProxyModel()
-        self.autocompletefilter.setSourceModel(self.autocompletemodel)
         self.autocompleteview = QListView(self.parent())
         self.autocompleteview.setStyleSheet("""
             QListView:item:selected { color: #36454f; background: #7abd14 }
             QListView:item { color: white }
             QListView {background-color: #36454f }""")
-        self.autocompleteview.setModel(self.autocompletefilter)
+        self.autocompleteview.setModel(self.autocompletemodel.filtermodel)
         self.autocompleteview.setWindowFlags(Qt.Popup)
         self.autocompleteview.setFocusPolicy(Qt.NoFocus)
         self.autocompleteview.setFocusProxy(self)
@@ -170,13 +189,11 @@ class CommandShell(QLineEdit):
         self.autocompleteview.adjustSize()
         size = self.mainwindow.height() / 100 * 15
         rowsize = self.autocompleteview.sizeHintForRow(0)
-        newheight = self.autocompletefilter.rowCount() * rowsize
+        newheight = self.autocompletemodel.filtered_item_count * rowsize
         if newheight < size:
             size = newheight + rowsize
-        self.autocompleteview.setUpdatesEnabled(False)
         self.autocompleteview.resize(self.width(), size)
-        self.autocompleteview.move(self.mapToGlobal(QPoint(0, 0 - self.autocompleteview.height())))
-        self.autocompleteview.setUpdatesEnabled(True)
+        self.autocompleteview.move(self.mapToGlobal(QPoint(0, 0 - size)))
         self.autocompleteview.setFocus()
         self.autocompleteview.setVisible(hasdata)
 
@@ -185,9 +202,7 @@ class CommandShell(QLineEdit):
         self.autocompletemodel.add_entries(completions)
 
     def filter_autocomplete(self, userdata, filteronly=False):
-        fuzzy = "".join(["{}.*".format(c) for c in userdata])
-        self.autocompletefilter.setFilterRegExp(fuzzy)
-        index = self.autocompletefilter.index(0, 0)
+        index = self.autocompletemodel.set_filter(userdata)
         if index.isValid():
             self.selectionmodel.clear()
             self.selectionmodel.select(index, QItemSelectionModel.SelectCurrent)
@@ -234,8 +249,8 @@ class CommandShell(QLineEdit):
         except IndexError:
             return False
 
-        if index.isValid():
-            text = self.autocompletefilter.data(index)
+        text = self.autocompletemodel.filtered_item_data(index)
+        if text:
             # Wrap text with space in quotes
             if ' ' in text:
                 text = "'{}'".format(text)
