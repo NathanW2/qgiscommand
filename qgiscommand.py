@@ -85,19 +85,21 @@ def view_source(name):
 
 class CompletionModel(QStandardItemModel):
     def __init__(self, items=None, parent=None):
+        super(CompletionModel, self).__init__(parent)
+         
         if not items:
             items = []
         self.add_entries(items)
 
     def add_entry(self, data, helptext):
-        data = u"{}".format(unicode(value))
+        data = u"{}".format(unicode(data))
         item = QStandardItem(data)
         item.setData(helptext, Qt.UserRole + 1)
         self.appendRow(item)
 
     def add_entries(self, entries):
         for entry in entries:
-            if hasattr(entry, "__getitem__"):
+            if isinstance(entry, tuple):
                 data, helptext = entry[0], entry[1]
             else:
                 data, helptext = entry, ''
@@ -180,7 +182,7 @@ class CommandShell(QLineEdit):
 
     def add_completions(self, completions):
         self.autocompletemodel.clear()
-        self.autocompletemodel.add_entries()
+        self.autocompletemodel.add_entries(completions)
 
     def filter_autocomplete(self, userdata, filteronly=False):
         fuzzy = "".join(["{}.*".format(c) for c in userdata])
