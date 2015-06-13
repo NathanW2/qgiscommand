@@ -83,6 +83,28 @@ def view_source(name):
     show_viewer(source, lineno, filename)
 
 
+class CompletionModel(QStandardItemModel):
+    def __init__(self, items=None, parent=None):
+        if not items:
+            items = []
+        self.add_entries(items)
+
+    def add_entry(self, data, helptext):
+        data = u"{}".format(unicode(value))
+        item = QStandardItem(data)
+        item.setData(helptext, Qt.UserRole + 1)
+        self.appendRow(item)
+
+    def add_entries(self, entries):
+        for entry in entries:
+            if hasattr(entry, "__getitem__"):
+                data, helptext = entry[0], entry[1]
+            else:
+                data, helptext = entry, ''
+
+            self.add_entry(data, helptext)
+
+
 
 class CommandShell(QLineEdit):
     def __init__(self, mainwindow, parent=None):
@@ -97,7 +119,7 @@ class CommandShell(QLineEdit):
         self.currentfunction = None
         self.textChanged.connect(self.text_changed)
         self._lastcompletions = None
-        self.autocompletemodel = QStandardItemModel()
+        self.autocompletemodel = CompletionModel()
         self.autocompletefilter = QSortFilterProxyModel()
         self.autocompletefilter.setSourceModel(self.autocompletemodel)
         self.autocompleteview = QListView(self.parent())
@@ -158,9 +180,7 @@ class CommandShell(QLineEdit):
 
     def add_completions(self, completions):
         self.autocompletemodel.clear()
-        for value in completions:
-            data = u"{}".format(unicode(value))
-            self.autocompletemodel.appendRow(QStandardItem(data))
+        self.autocompletemodel.add_entries()
 
     def filter_autocomplete(self, userdata, filteronly=False):
         fuzzy = "".join(["{}.*".format(c) for c in userdata])
