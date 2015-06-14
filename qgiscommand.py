@@ -3,7 +3,7 @@ import os
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from PyQt4.Qsci import QsciScintilla, QsciLexerCustom, QsciAPIs, QsciLexerPython
+from PyQt4.Qsci import QsciScintilla, QsciLexerPython
 
 import command
 import qgis_commands
@@ -123,26 +123,15 @@ class CompletionModel(QStandardItemModel):
             return self.filtermodel.data(index)
         else:
             return None
-            
-            
-                
 
 
+class CompletionView(QWidget):
+    completeRequest = pyqtSignal()
 
-class CommandShell(QLineEdit):
-    def __init__(self, mainwindow, parent=None):
-        super(CommandShell, self).__init__(parent)
+    def __init__(self, mainwindow, completions=None, parent=None):
+        super(CompletionView, self).__init__(parent)
         self.mainwindow = mainwindow
-        self.settings = QSettings()
-        self.lex = QsciLexerPython(self)
-        self.apis = QsciAPIs(self.lex)
-        self.lex.setAPIs(self.apis)
-        self._start_prompt = _start_prompt
-        self.prompt = self._start_prompt
-        self.currentfunction = None
-        self.textChanged.connect(self.text_changed)
-        self._lastcompletions = None
-        self.autocompletemodel = CompletionModel()
+        self.autocompletemodel = CompletionModel(completions)
         self.autocompleteview = QListView(self.parent())
         self.autocompleteview.setStyleSheet("""
             QListView:item:selected { color: #36454f; background: #7abd14 }
@@ -154,11 +143,9 @@ class CommandShell(QLineEdit):
         self.autocompleteview.setFocusProxy(self)
         self.autocompleteview.setMouseTracking(True)
         self.autocompleteview.hide()
-        self.setStyleSheet("QLineEdit { border: none; background: #36454f; color: #7abd14  }")
-        self.selectionmodel = self.autocompleteview.selectionModel()
         self.autocompleteview.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.autocompleteview.installEventFilter(self)
-        self.show_prompt()
+        self.selectionmodel = self.autocompleteview.selectionModel()
 
     def eventFilter(self, obj, event):
         # WAT!? If this isn't here then the plugin crashes on unload
@@ -172,36 +159,19 @@ class CommandShell(QLineEdit):
 
         if event.type() == QEvent.KeyPress:
             if event.key() in [Qt.Key_Tab, Qt.Key_Enter, Qt.Key_Return]:
-                self.complete()
+                self.completeRequest.emit()
                 self.autocompleteview.hide()
-                self.setFocus()
+                self.parent().setFocus()
                 return True
             if event.key() in [Qt.Key_Up, Qt.Key_Down]:
                 return False
             else:
-                self.setFocus()
-                self.event(event)
+                self.parent().setFocus()
+                self.parent().event(event)
 
         return False
 
-    def show_completion(self):
-        hasdata = self.autocompletemodel.rowCount() > 0
-        self.autocompleteview.adjustSize()
-        size = self.mainwindow.height() / 100 * 15
-        rowsize = self.autocompleteview.sizeHintForRow(0)
-        newheight = self.autocompletemodel.filtered_item_count * rowsize
-        if newheight < size:
-            size = newheight + rowsize
-        self.autocompleteview.resize(self.width(), size)
-        self.autocompleteview.move(self.mapToGlobal(QPoint(0, 0 - size)))
-        self.autocompleteview.setFocus()
-        self.autocompleteview.setVisible(hasdata)
-
-    def add_completions(self, completions):
-        self.autocompletemodel.clear()
-        self.autocompletemodel.add_entries(completions)
-
-    def filter_autocomplete(self, userdata, filteronly=False):
+    def filter_autocomplete(self, userdata):
         index = self.autocompletemodel.set_filter(userdata)
         if index.isValid():
             self.selectionmodel.clear()
@@ -211,12 +181,58 @@ class CommandShell(QLineEdit):
 
             self.show_completion()
 
+    def add_completions(self, completions):
+        self.autocompletemodel.clear()
+        self.autocompletemodel.add_entries(completions)
+
+    def show_completion(self):
+        hasdata = self.autocompletemodel.rowCount() > 0
+        self.autocompleteview.adjustSize()
+        size = self.mainwindow.height() / 100 * 15
+        rowsize = self.autocompleteview.sizeHintForRow(0)
+        newheight = self.autocompletemodel.filtered_item_count * rowsize
+        if newheight < size:
+            size = newheight + rowsize
+        self.autocompleteview.resize(self.parent().width(), size)
+        self.autocompleteview.move(self.mapToGlobal(QPoint(0, 0 - size)))
+        self.autocompleteview.setFocus()
+        self.autocompleteview.setVisible(hasdata)
+
+    @property
+    def selected_completion(self):
+        try:
+            index = self.autocompleteview.selectedIndexes()[0]
+        except IndexError:
+            return None
+
+        text = self.autocompletemodel.filtered_item_data(index)
+        if text:
+            # Wrap text with space in quotes
+            if ' ' in text:
+                text = "'{}'".format(text)
+            return text
+        return None
+
+class CommandShell(QLineEdit):
+    def __init__(self, mainwindow, parent=None):
+        super(CommandShell, self).__init__(parent)
+        self.mainwindow = mainwindow
+        self.settings = QSettings()
+        self._start_prompt = _start_prompt
+        self.prompt = self._start_prompt
+        self.currentfunction = None
+        self.textChanged.connect(self.text_changed)
+        self.setStyleSheet("QLineEdit { border: none; background: #36454f; color: #7abd14  }")
+        self.autocompleteview = CompletionView(self.mainwindow, parent=self)
+        self.autocompleteview.completeRequest.connect(self.complete)
+        self.show_prompt()
+
     def text_changed(self):
         userdata = self.get_data()
         if not self.currentfunction:
             completions, userdata = command.completions_for_line(self.get_data())
-            self.add_completions(completions)
-        self.filter_autocomplete(userdata)
+            self.autocompleteview.add_completions(completions)
+        self.autocompleteview.filter_autocomplete(userdata)
 
     def finsihed(self):
         self.parent().removeEventFilter(self)
@@ -244,22 +260,14 @@ class CommandShell(QLineEdit):
             super(CommandShell, self).keyPressEvent(e)
 
     def complete(self):
-        try:
-            index = self.autocompleteview.selectedIndexes()[0]
-        except IndexError:
+        text = self.autocompleteview.selected_completion
+        if not text:
             return False
-
-        text = self.autocompletemodel.filtered_item_data(index)
-        if text:
-            # Wrap text with space in quotes
-            if ' ' in text:
-                text = "'{}'".format(text)
-
-            line = self.get_data()
-            space = line.rfind(' ')
-            newline = line[:space + 1] + text + " "
-            self.show_prompt(self.prompt, newline)
-            return True
+        line = self.get_data()
+        space = line.rfind(' ')
+        newline = line[:space + 1] + text + " "
+        self.show_prompt(self.prompt, newline)
+        return True
 
     def end_current(self):
         self.currentfunction = None
@@ -314,12 +322,15 @@ class CommandShell(QLineEdit):
         try:
             prompt, data, completions = self.currentfunction.send(line)
             self.show_prompt(prompt, data)
-            self.add_completions(completions)
+            self.autocompleteview.add_completions(completions)
         except StopIteration:
             self.currentfunction = None
             self.show_prompt()
         except command.NoFunction:
             self.currentfunction = None
+
+    def show_completion(self):
+        self.autocompleteview.show_completion()
 
     def entered(self):
         line = self.get_data()
