@@ -188,7 +188,8 @@ class CompletionView(QWidget):
 
             self.show_completion()
 
-    def add_completions(self, completions):
+    def add_completions(self, completions, header):
+        self.headerlabel.setText(header)
         self.autocompletemodel.clear()
         self.autocompletemodel.add_entries(completions)
 
@@ -237,8 +238,8 @@ class CommandShell(QLineEdit):
     def text_changed(self):
         userdata = self.get_data()
         if not self.currentfunction:
-            completions, userdata = command.completions_for_line(self.get_data())
-            self.autocompleteview.add_completions(completions)
+            completions, userdata, header = command.completions_for_line(self.get_data())
+            self.autocompleteview.add_completions(completions, header)
         self.autocompleteview.filter_autocomplete(userdata)
 
     def finsihed(self):
@@ -327,9 +328,9 @@ class CommandShell(QLineEdit):
                 return
 
         try:
-            prompt, data, completions = self.currentfunction.send(line)
+            prompt, data, completions, header = self.currentfunction.send(line)
             self.show_prompt(prompt, data)
-            self.autocompleteview.add_completions(completions)
+            self.autocompleteview.add_completions(completions, header)
         except StopIteration:
             self.currentfunction = None
             self.show_prompt()

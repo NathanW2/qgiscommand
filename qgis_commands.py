@@ -67,6 +67,7 @@ def hide_docks():
         dock.setVisible(False)
 
 
+@command.complete_name("Layers")
 def layers(argname, data):
     """
     Return all the layers loaded in this session
@@ -75,6 +76,7 @@ def layers(argname, data):
             for layer in QgsMapLayerRegistry.instance().mapLayers().values()]
 
 
+@command.complete_name("Vector Layers")
 def vector_layers(argname, data):
     """
     Return all the vector layers loaded in this session

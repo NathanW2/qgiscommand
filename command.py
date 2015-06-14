@@ -12,6 +12,7 @@ help_text = {}
 validators = {}
 completers = {}
 sourcelookup = {}
+completerdocs = {}
 nohistory = []
 
 command_split = re.compile(r"[^'\s]\S*|'.+?'")
@@ -81,6 +82,12 @@ def check(**checks):
 
     return wrapper
 
+def complete_name(header):
+    def wrapper(func):
+        completerdocs[func] = header
+        return func
+    return wrapper
+
 
 def complete_with(**functions):
     def wrapper(func):
@@ -93,12 +100,21 @@ def complete_with(**functions):
     return wrapper
 
 
+def completerheader(completefunc):
+    """
+    Return the header for a completer function
+    """
+    docs = completerdocs.get(completefunc, escape_name(completefunc.__name__))
+    return docs
+
+
 def completions_for_arg(funcname, argname, userdata):
     try:
         completefunc = completers.get(funcname, {})[argname]
-        return completefunc(argname, userdata)
+        header = completerheader(completefunc)
+        return completefunc(argname, userdata), header
     except KeyError:
-        return []
+        return [], argname
 
 
 def command_list():
@@ -106,13 +122,18 @@ def command_list():
 
 
 def completions_for_line(line):
+    """
+    Return the completions for the given line.
+
+    Return a tuple of completions, user data, and header text
+    """
     if line.strip() == "":
-        return command_list(), ""
+        return command_list(), "", "Commands"
 
     try:
         funcname, func, data = parse_line(line)
     except NoFunction as er:
-        return command_list(), er.funcname
+        return command_list(), er.funcname, "Commands"
 
     args, _, _, _ = inspect.getargspec(func)
     index = len(data) - 1
@@ -129,14 +150,15 @@ def completions_for_line(line):
     try:
         argname = args[index]
     except IndexError:
-        return [], ""
+        return [], "", ""
 
     try:
         userdata = data[index]
     except IndexError:
         userdata = ''
 
-    return completions_for_arg(funcname, argname, userdata), userdata
+    completions, header = completions_for_arg(funcname, argname, userdata)
+    return completions, userdata, header
 
 
 def validators_for_function(funcname):
