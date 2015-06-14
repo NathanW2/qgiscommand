@@ -132,20 +132,28 @@ class CompletionView(QWidget):
         super(CompletionView, self).__init__(parent)
         self.mainwindow = mainwindow
         self.autocompletemodel = CompletionModel(completions)
-        self.autocompleteview = QListView(self.parent())
-        self.autocompleteview.setStyleSheet("""
+        self.autocompleteview = QListView(self)
+        self.setStyleSheet("""
+            QLabel { font: bold 12pt; color: white; background-color: #5c8f0f }
             QListView:item:selected { color: #36454f; background: #7abd14 }
             QListView:item { color: white }
-            QListView {background-color: #36454f }""")
+            QListView {background-color: #36454f; border: none; }""")
         self.autocompleteview.setModel(self.autocompletemodel.filtermodel)
-        self.autocompleteview.setWindowFlags(Qt.Popup)
-        self.autocompleteview.setFocusPolicy(Qt.NoFocus)
-        self.autocompleteview.setFocusProxy(self)
+        self.setWindowFlags(Qt.Popup)
+        self.setFocusPolicy(Qt.NoFocus)
+        self.setFocusProxy(self)
         self.autocompleteview.setMouseTracking(True)
-        self.autocompleteview.hide()
         self.autocompleteview.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.autocompleteview.installEventFilter(self)
         self.selectionmodel = self.autocompleteview.selectionModel()
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+        self.headerlabel = QLabel(self)
+        self.headerlabel.setText("Commands")
+        self.layout().setSpacing(0)
+        self.layout().setContentsMargins(0,0,0,0)
+        self.layout().addWidget(self.headerlabel)
+        self.layout().addWidget(self.autocompleteview)
 
     def eventFilter(self, obj, event):
         # WAT!? If this isn't here then the plugin crashes on unload
@@ -153,14 +161,13 @@ class CompletionView(QWidget):
             return False
 
         if event.type() == QEvent.MouseButtonPress:
-            self.autocompleteview.hide()
-            self.setFocus()
+            self.parent().setFocus()
             return True
 
         if event.type() == QEvent.KeyPress:
             if event.key() in [Qt.Key_Tab, Qt.Key_Enter, Qt.Key_Return]:
                 self.completeRequest.emit()
-                self.autocompleteview.hide()
+                self.hide()
                 self.parent().setFocus()
                 return True
             if event.key() in [Qt.Key_Up, Qt.Key_Down]:
@@ -186,17 +193,17 @@ class CompletionView(QWidget):
         self.autocompletemodel.add_entries(completions)
 
     def show_completion(self):
-        hasdata = self.autocompletemodel.rowCount() > 0
-        self.autocompleteview.adjustSize()
+        self.adjustSize()
+        hasdata = self.autocompletemodel.filtered_item_count > 0
         size = self.mainwindow.height() / 100 * 15
         rowsize = self.autocompleteview.sizeHintForRow(0)
         newheight = self.autocompletemodel.filtered_item_count * rowsize
         if newheight < size:
             size = newheight + rowsize
-        self.autocompleteview.resize(self.parent().width(), size)
-        self.autocompleteview.move(self.mapToGlobal(QPoint(0, 0 - size)))
+        self.resize(self.parent().width(), size)
+        self.move(self.parent().mapToGlobal(QPoint(0, 0 - self.height())))
         self.autocompleteview.setFocus()
-        self.autocompleteview.setVisible(hasdata)
+        self.setVisible(hasdata)
 
     @property
     def selected_completion(self):
