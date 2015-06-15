@@ -88,7 +88,7 @@ class CompletionModel(QStandardItemModel):
         super(CompletionModel, self).__init__(parent)
         self.filtermodel = QSortFilterProxyModel()
         self.filtermodel.setSourceModel(self)
-         
+
         if not items:
             items = []
         self.add_entries(items)
@@ -155,6 +155,20 @@ class CompletionView(QWidget):
         self.layout().addWidget(self.headerlabel)
         self.layout().addWidget(self.autocompleteview)
 
+    def move_down(self):
+        index = self.autocompleteview.currentIndex()
+        row = index.row() + 1
+        newindex = self.autocompletemodel.filtermodel.index(row, 0)
+        if newindex.isValid():
+            self.autocompleteview.setCurrentIndex(newindex)
+
+    def move_up(self):
+        index = self.autocompleteview.currentIndex()
+        row = index.row() - 1
+        newindex = self.autocompletemodel.filtermodel.index(row, 0)
+        if newindex.isValid():
+            self.autocompleteview.setCurrentIndex(newindex)
+
     def eventFilter(self, obj, event):
         # WAT!? If this isn't here then the plugin crashes on unload
         if not QEvent:
@@ -165,6 +179,10 @@ class CompletionView(QWidget):
             return True
 
         if event.type() == QEvent.KeyPress:
+            if event.modifiers() == Qt.ControlModifier and event.key() == Qt.Key_N:
+                self.move_down()
+            if event.modifiers() == Qt.ControlModifier and event.key() == Qt.Key_P:
+                self.move_up()
             if event.key() in [Qt.Key_Tab, Qt.Key_Enter, Qt.Key_Return]:
                 self.completeRequest.emit()
                 self.hide()
@@ -248,13 +266,13 @@ class CommandShell(QLineEdit):
     def event(self, event):
         if not QEvent:
             return False
-            
+
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Tab:
             self.complete()
             return True
 
         return super(CommandShell, self).event(event)
-                
+
     def keyPressEvent(self, e):
         if e.key() in (Qt.Key_Return, Qt.Key_Enter):
             self.entered()
