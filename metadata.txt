@@ -1,12 +1,15 @@
 [general]
 name=Command Bar
 description=A command bar interface for QGIS. Handy for quick data entry, or not using you mouse.  New commands can be created using Python.
-version=0.22
+version=0.23
 qgisMinimumVersion=2.4
 author=Nathan Woodrow
 email=woodrow.nathan@gmail.com
 icon=icon.png
 changelog=
+        0.23
+        Ctrl+N | Ctrl + P to move though list
+        Header on complete list
         0.22
         Add edit-package, define-package commands
         0.21
