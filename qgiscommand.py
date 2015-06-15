@@ -212,7 +212,6 @@ class CompletionView(QWidget):
         self.autocompletemodel.add_entries(completions)
 
     def show_completion(self):
-        self.adjustSize()
         hasdata = self.autocompletemodel.filtered_item_count > 0
         size = self.mainwindow.height() / 100 * 15
         rowsize = self.autocompleteview.sizeHintForRow(0)
