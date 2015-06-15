@@ -45,17 +45,9 @@ def show_viewer(text, lineno=0, title='', syntax='Python'):
 @command.command()
 def help():
     """
-    Show help for the command bar
+    Show home page for the command bar
     """
-    # TODO Replace this with a html page for help
-    helptext = """Command Bar help
-
-To get help on a command type: command-help
-Current commands:
-{commands}
-    """.format(commands="\n".join(command.commands.keys()))
-    name = "Command bar"
-    show_viewer(helptext, title="Help for {}".format(name), syntax='')
+    QDesktopServices.openUrl(QUrl("http://qgiscommand.readthedocs.org/en/latest/"))
 
 
 @command.command("Command name")
