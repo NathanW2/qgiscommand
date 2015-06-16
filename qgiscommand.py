@@ -379,7 +379,8 @@ class CommandShell(QLineEdit):
                 return
 
         try:
-            prompt, data, completions, header = self.currentfunction.send(line)
+            prompt, data, completions = self.currentfunction.send(line)
+            completions, header = completions[0], completions[1]
             self.show_prompt(prompt, data)
             self.autocompleteview.add_completions(completions, header)
             self.autocompleteview.filter_autocomplete("")
