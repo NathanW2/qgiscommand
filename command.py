@@ -130,30 +130,34 @@ def completions_for_line(line):
     if line.strip() == "":
         return command_list(), "", "Commands"
 
+    endofline = line.endswith(" ")
+
     try:
         funcname, func, data = parse_line(line)
     except NoFunction as er:
         return command_list(), er.funcname, "Commands"
 
+    if not endofline and not data:
+        return command_list(), "", "Commands"
+
     args, _, _, _ = inspect.getargspec(func)
-    index = len(data) - 1
 
-    if index == -1:
-        index = 0
+    # If we don't need any args we return here
+    if args == 0 or (len(data) > len(args)):
+        return [], "", ""
 
-    endofline = line.endswith(" ")
-    if endofline:
-        index += 1
-    else:
-        index -= 1
+    position = len(data)
+
+    if not endofline:
+        position -= 1
 
     try:
-        argname = args[index]
+        argname = args[position]
     except IndexError:
         return [], "", ""
 
     try:
-        userdata = data[index]
+        userdata = data[-1]
     except IndexError:
         userdata = ''
 
