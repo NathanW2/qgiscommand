@@ -1,6 +1,7 @@
 import sys
 import os
 
+from string import Template
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.Qsci import QsciScintilla, QsciLexerPython
@@ -11,10 +12,17 @@ import layer_commands
 import package_commands
 
 _start_prompt = "> "
+_ui_settings = {
+    "Background": '#36454f',
+    "Font_Color": 'white',
+    "Header_Background": '#5c8f0f'
+}
 
-import logger
 
-# logger.msg('Test message from qgiscommand.py')
+class Notify(QObject):
+    settingChanged = pyqtSignal()
+
+notify = Notify()
 
 
 class SourceViewer(QsciScintilla):
@@ -48,6 +56,24 @@ def help():
     Show home page for the command bar
     """
     QDesktopServices.openUrl(QUrl("http://qgiscommand.readthedocs.org/en/latest/"))
+
+
+@command.command("Prompt?")
+def set_commandbar_prompt(char):
+    global _start_prompt
+    _start_prompt = "{} ".format(char)
+
+
+@command.complete_name("UI Items")
+def list_ui_items(argname, data):
+    return _ui_settings.keys()
+
+
+@command.command("Item?", "Hex color for background?")
+@command.complete_with(item=list_ui_items)
+def set_commandbar_color(item, color):
+    _ui_settings[item] = color
+    notify.settingChanged.emit()
 
 
 @command.command("Command name")
@@ -125,11 +151,6 @@ class CompletionView(QWidget):
         self.mainwindow = mainwindow
         self.autocompletemodel = CompletionModel(completions)
         self.autocompleteview = QListView(self)
-        self.setStyleSheet("""
-            QLabel { font: bold 12pt; color: white; background-color: #5c8f0f }
-            QListView:item:selected { color: #36454f; background: #7abd14 }
-            QListView:item { color: white }
-            QListView {background-color: #36454f; border: none; }""")
         self.autocompleteview.setModel(self.autocompletemodel.filtermodel)
         self.setWindowFlags(Qt.Popup)
         self.setFocusPolicy(Qt.NoFocus)
@@ -146,6 +167,17 @@ class CompletionView(QWidget):
         self.layout().setContentsMargins(0,0,0,0)
         self.layout().addWidget(self.headerlabel)
         self.layout().addWidget(self.autocompleteview)
+        notify.settingChanged.connect(self.update_ui)
+        self.styletemplate = Template("""
+            QLabel { font: bold 12pt; color: ${Font_Color} ; background-color: ${Header_Background} }
+            QListView:item:selected { color: #36454f; background: #7abd14 }
+            QListView:item { color: ${Font_Color}  }
+            QListView {background-color: $Background; border: none; }""")
+        self.update_ui()
+
+    def update_ui(self):
+        style = self.styletemplate.safe_substitute(_ui_settings)
+        self.setStyleSheet(style)
 
     def move_down(self):
         index = self.autocompleteview.currentIndex()
@@ -230,19 +262,26 @@ class CompletionView(QWidget):
             return text
         return None
 
+
 class CommandShell(QLineEdit):
     def __init__(self, mainwindow, parent=None):
         super(CommandShell, self).__init__(parent)
         self.mainwindow = mainwindow
         self.settings = QSettings()
-        self._start_prompt = _start_prompt
-        self.prompt = self._start_prompt
+        self.prompt = _start_prompt
         self.currentfunction = None
         self.textChanged.connect(self.text_changed)
-        self.setStyleSheet("QLineEdit { border: none; background: #36454f; color: #7abd14  }")
         self.autocompleteview = CompletionView(self.mainwindow, parent=self)
         self.autocompleteview.completeRequest.connect(self.complete)
         self.show_prompt()
+        notify.settingChanged.connect(self.update_ui)
+        self.styletemplate = Template("""
+                    QLineEdit { border: none; background: $Background; color: ${Font_Color}  }""")
+        self.update_ui()
+
+    def update_ui(self):
+        style = self.styletemplate.safe_substitute(_ui_settings)
+        self.setStyleSheet(style)
 
     def text_changed(self):
         userdata = self.get_data()
@@ -290,8 +329,11 @@ class CommandShell(QLineEdit):
         self.currentfunction = None
         self.show_prompt()
 
-    def show_prompt(self, prompt=_start_prompt, data=None):
+    def show_prompt(self, prompt=None, data=None):
         self.clear()
+        if not prompt:
+            prompt = _start_prompt
+
         if not prompt == _start_prompt:
             prompt += ":"
 
@@ -340,6 +382,7 @@ class CommandShell(QLineEdit):
             prompt, data, completions, header = self.currentfunction.send(line)
             self.show_prompt(prompt, data)
             self.autocompleteview.add_completions(completions, header)
+            self.autocompleteview.filter_autocomplete("")
         except StopIteration:
             self.currentfunction = None
             self.show_prompt()
