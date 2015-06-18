@@ -2,9 +2,19 @@
 
 [![Buy Nathan a drink because he makes cool stuff. )](https://img.shields.io/badge/Paypal-Buy%20a%20Drink-blue.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=F8FQJT9PBF5VE&lc=AU&item_name=Buy%20Nathan%20a%20drink%20because%20he%20makes%20cool%20stuff%2e%20%28%20You%20know%20you%20love%20it%29&currency_code=AUD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
 
-A simple to use interactive command bar for QGIS. Commands are defined in Python and may take arguments. 
+Are you pining for the good old MicroStation command line? Love the AutoCAD style data entry? Or really who needs a mouse anyway.
+The QGIS Command Bar plugin has your back.
 
+## What the heck is this?
+
+A simple to use interactive command bar for QGIS. A bit like Emcas command line, or the AutoCAD one, or whatever it
+evolves into. 
+
+Because Python is so bloody great new commands can be defined in Python with normal functions.
 All functions are interactive and if not all arguments are given will prompt for each one as required.
+
+Pro Tip: Type `define-package yourpackagename` to open a new package in your text editor. `reload-packages` to load it
+
 
 ![Demo](images/commandbar.gif)
 
