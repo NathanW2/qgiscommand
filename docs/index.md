@@ -53,7 +53,7 @@ a API for that.  Follow the API guide in order to create you own commands.
 Another cool little trick is that commands can also be
 defined in plugins to add plugin functions to the command bar.
 
-Here is a demo of adding a plugin based `az-distance` command that is loaded from a plugin.
+Here is a demo of adding a plugin based `az-vertex` command that is loaded from a plugin.
 
 ![plugin](images/distance.gif)
 
