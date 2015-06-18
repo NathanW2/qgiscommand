@@ -1,6 +1,7 @@
 # API
 
-Functions that can be used as commands should defined with the `@command.command` function.  This function takes a list of questions for each argument. At the moment you must set all questions for all
+Functions that can be used as commands should defined with the `@command.command` function.
+This function takes a list of questions for each argument. At the moment you must set all questions for all
 args in the function.
 
 Here is an example function that will open the attribute table for the given layer name
@@ -25,6 +26,9 @@ def my_function():
 
 Can be called as `my-function`
 
+If you need to define more then one prompt you can do it like this `@command.coomand("Message 1", "Message 2")` with each one matching
+the argument you function takes
+
 ### Auto Complete
 
 Auto complete functions should return a list of values to be used by the auto complete list in the bar
@@ -34,6 +38,16 @@ def vector_layers(argname, data):
     return [layer.name() for layer in QgsMapLayerRegistry.instance().mapLayers().values()]
 ```
 
+```python
+def names(argname, data):
+    return ["Bob", "Jane", "Foo"]
+```
+ 
+The `argname` and `data` hold the current name of the argument being used for completion and the data
+the user is typing. You can ignore it or use it to pre filter the list
+
+**Note:** The command bar already does fuzzy matching so you may or may not need to pre filter.
+
 Use `@command.complete_with` to set the completer for a arg
 
 ```python
@@ -41,6 +55,15 @@ Use `@command.complete_with` to set the completer for a arg
 @command.complete_with(tablename=vector_layers)
 def table(tablename):
     pass
+```
+
+You can also use the `@command.complete_name("Name")` function to give the auto complete list
+a nice name
+
+```python
+@command.complete_name("Pick a user name?")
+def names(argname, data):
+    return ["Bob", "Jane", "Foo"]
 ```
 
 ### Validation

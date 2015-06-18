@@ -59,3 +59,11 @@ Here is a demo of adding a plugin based `az-distance` command that is loaded fro
 
 Strat by using `define-package` followed by `reload-packages`. User commands are
 reloaded when the plugin starts ready to go
+
+## BUGZ!
+
+So I develop this in my free time and so there is bound to be bugs.  Hopefully I can
+keep the core simple enough to reduce the number but no doubt you are going to find some.
+
+If you do report [them](https://github.com/NathanW2/qgiscommand/issues) please.  If you have
+the skills the fix the bugs I am very open to pull requests.
