@@ -15,17 +15,29 @@ All functions are interactive and if not all arguments are given will prompt for
 
 Pro Tip: Type `define-package yourpackagename` to open a new package in your text editor. `reload-packages` to load it
 
+Download the plugin from the QGIS plugin repo orfrom [http://plugins.qgis.org/plugins/qgiscommand/](here) and hit `CTRL + ,` to give the
+bar focus.
+
+Here is an example of using `rename-layers` to rename layer names using regex find and replace.
 
 ![Demo](images/commandbar.gif)
 
-Download the plugin from the QGIS plugin repo or from [http://plugins.qgis.org/plugins/qgiscommand/](here)
+I said it was interactive so here it is asking a question
+
+![question](images/question.gif)
+
+## Why even build something like this?
+
+I have used AutoCAD in the past, and now use [Emacs and Vim](https://github.com/syl20bnr/spacemacs) as my editor, they all have
+cool command line style interfaces.  Sure QGIS has the Python console but it's not quite the same. The Python console
+can't ask you questions while running a function, it's all or nothing when calling a function.
 
 Inspiration for the command bar was drawn from AutoCAD and Emacs, so you might
 find things that feel the same - or at least an attempt to.
 
 ## Usage
 
-The command bar is designed to be a simple interactive command window, using
+As the command bar is designed to be a simple interactive command window, using
 `CTRL ,` will open the command bar at the bottom of you QGIS map canvas ready to
 type. The first auto complete will show all the functions that have been defined
 and typing will filter the list.
@@ -33,32 +45,17 @@ and typing will filter the list.
 **Tip**: The auto complete is fuzzy matched so you can type any letters in order
 and it will filter based on each leter not the exact pattern.  Try it.
 
-## Init file
-
-The `init.qgsc` file is loaded from `qgis2\python\commandbar` when QGIS is fully
-loaded, after all plugins have been loaded.
-
-Commands in the init file need to be wrapped in `()` in order to be considered
-commands.  Here is an example of defining aliases for commands you might use all
-the time.
-
-```lisp
-(alias pt point-at)
-(alias lp load-project)
-(alias move feature-move)
-```
-
-You can also define a single command over many lines like so:
-
-```lisp
-(define-project-paths '/home/user/gisdata'
-                      '/home/user/projects')
-```
-
 ## API
 
-Follow the API guide in order to create you own commands.  Commands can also be
+What is even the point of a tool like this if you can't extend it.  Well there is
+a API for that.  Follow the API guide in order to create you own commands.
+
+Another cool little trick is that commands can also be
 defined in plugins to add plugin functions to the command bar.
 
-User commands can be created in `.qgis\python\commandbar` by following Adding
-User commands guide
+Here is a demo of adding a plugin based `az-distance` command that is loaded from a plugin.
+
+![plugin](images/distance.gif)
+
+Strat by using `define-package` followed by `reload-packages`. User commands are
+reloaded when the plugin starts ready to go
