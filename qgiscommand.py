@@ -255,12 +255,7 @@ class CompletionView(QWidget):
             return None
 
         text = self.autocompletemodel.filtered_item_data(index)
-        if text:
-            # Wrap text with space in quotes
-            if ' ' in text:
-                text = "'{}'".format(text)
-            return text
-        return None
+        return text
 
 
 class CommandShell(QLineEdit):
@@ -319,6 +314,11 @@ class CommandShell(QLineEdit):
         text = self.autocompleteview.selected_completion
         if not text:
             return False
+        # Wrap text with space in quotes
+        if ' ' in text and not self.currentfunction:
+            # TODO Handle escaping better
+            text = "'{}'".format(text)
+
         line = self.get_data()
         space = line.rfind(' ')
         newline = line[:space + 1] + text + " "
